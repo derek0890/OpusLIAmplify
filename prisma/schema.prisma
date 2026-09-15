@@ -1,0 +1,72 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  EMPLOYEE
+}
+
+enum PostStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum CopyType {
+  REPOST
+  COMMENT
+}
+
+model User {
+  id             String   @id @default(cuid())
+  email          String   @unique
+  name           String
+  passwordHash   String
+  role           Role     @default(EMPLOYEE)
+  createdAt      DateTime @default(now())
+
+  posts          Post[]          @relation("PostAuthor")
+  amplifiedCopies AmplifiedCopy[]
+  styleGuideEdits StyleGuide[]
+}
+
+model Post {
+  id           String     @id @default(cuid())
+  caption      String
+  creativeUrl  String?
+  linksJson    String     @default("[]")
+  status       PostStatus @default(DRAFT)
+  createdById  String
+  createdBy    User       @relation("PostAuthor", fields: [createdById], references: [id])
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  amplifiedCopies AmplifiedCopy[]
+}
+
+model StyleGuide {
+  id          String   @id @default(cuid())
+  content     String
+  updatedAt   DateTime @updatedAt
+  updatedById String
+  updatedBy   User     @relation(fields: [updatedById], references: [id])
+}
+
+model AmplifiedCopy {
+  id        String   @id @default(cuid())
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id])
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  type      CopyType
+  content   String
+  createdAt DateTime @default(now())
+
+  @@index([postId, userId])
+}
