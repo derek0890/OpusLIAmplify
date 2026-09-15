@@ -55,7 +55,9 @@ export async function researchLinks(links: string[]): Promise<string> {
       "across all sources, output exactly: NONE",
     ].join(" "),
     input: sourcesBlock,
-    max_output_tokens: 600,
+    // Reasoning tokens count against this budget and vary run to run, so
+    // leave generous headroom beyond the short bullet list we actually want.
+    max_output_tokens: 1500,
   });
 
   const text = response.output_text?.trim() ?? "";
@@ -131,15 +133,26 @@ export async function generateAmplifiedCopy({
 
   const response = await getClient().responses.create({
     model: COPY_MODEL,
-    reasoning: { effort: "medium" },
+    // "low" is enough for gpt-5.5 to reliably follow the style guide on a
+    // short social-copy task, and keeps reasoning-token spend (which counts
+    // against max_output_tokens and varies run to run) well clear of the cap.
+    reasoning: { effort: "low" },
     instructions,
     input: userInput,
-    max_output_tokens: 700,
+    // Generous headroom over the ~80/~45-word target: reasoning tokens are
+    // invisible but billed against this same budget, and running out mid-
+    // reasoning returns an empty response instead of an error.
+    max_output_tokens: 2000,
   });
 
   const text = response.output_text?.trim();
   if (!text) {
-    throw new Error("OpenAI did not return text content.");
+    const incompleteReason = response.incomplete_details?.reason;
+    throw new Error(
+      incompleteReason
+        ? `OpenAI response was incomplete (${incompleteReason}).`
+        : "OpenAI did not return text content.",
+    );
   }
 
   return text;
