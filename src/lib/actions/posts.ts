@@ -56,6 +56,7 @@ export async function createPost(formData: FormData) {
 
   const caption = String(formData.get("caption") ?? "").trim();
   const linksRaw = String(formData.get("links") ?? "");
+  const contextLinksRaw = String(formData.get("contextLinks") ?? "");
   const status = String(formData.get("status") ?? "DRAFT");
   const creative = formData.get("creative");
 
@@ -73,6 +74,7 @@ export async function createPost(formData: FormData) {
       caption,
       creativeUrl,
       linksJson: JSON.stringify(parseLinks(linksRaw)),
+      contextLinksJson: JSON.stringify(parseLinks(contextLinksRaw)),
       status: status === "PUBLISHED" ? "PUBLISHED" : "DRAFT",
       createdById: session.user.id,
     },
@@ -85,8 +87,14 @@ export async function createPost(formData: FormData) {
 export async function updatePost(postId: string, formData: FormData) {
   await requireAdmin();
 
+  const existing = await prisma.post.findUnique({ where: { id: postId } });
+  if (!existing) {
+    throw new Error("Post not found.");
+  }
+
   const caption = String(formData.get("caption") ?? "").trim();
   const linksRaw = String(formData.get("links") ?? "");
+  const contextLinksRaw = String(formData.get("contextLinks") ?? "");
   const status = String(formData.get("status") ?? "DRAFT");
   const creative = formData.get("creative");
 
@@ -94,16 +102,27 @@ export async function updatePost(postId: string, formData: FormData) {
     throw new Error("Caption is required.");
   }
 
+  const contextLinksJson = JSON.stringify(parseLinks(contextLinksRaw));
+
   const data: {
     caption: string;
     linksJson: string;
+    contextLinksJson: string;
+    contextBrief?: null;
     status: "DRAFT" | "PUBLISHED" | "ARCHIVED";
     creativeUrl?: string;
   } = {
     caption,
     linksJson: JSON.stringify(parseLinks(linksRaw)),
+    contextLinksJson,
     status: status === "PUBLISHED" || status === "ARCHIVED" ? status : "DRAFT",
   };
+
+  // Reference links changed — drop the cached research brief so the next
+  // generation re-crawls instead of using stale context.
+  if (contextLinksJson !== existing.contextLinksJson) {
+    data.contextBrief = null;
+  }
 
   if (creative instanceof File && creative.size > 0) {
     data.creativeUrl = await saveCreative(creative);

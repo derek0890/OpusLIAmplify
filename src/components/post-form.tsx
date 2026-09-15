@@ -9,6 +9,7 @@ type Props = {
   defaultValues?: {
     caption?: string;
     links?: string[];
+    contextLinks?: string[];
     status?: string;
     creativeUrl?: string | null;
   };
@@ -70,6 +71,25 @@ export function PostForm({ action, submitLabel, defaultValues }: Props) {
           rows={3}
           defaultValue={defaultValues?.links?.join("\n")}
           placeholder="https://opustechnologies.example/blog/post"
+          className="w-full resize-y rounded-lg border border-slate-300 px-3 py-2 font-mono text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+        />
+      </div>
+
+      <div>
+        <label className="mb-1 block text-sm font-medium text-slate-700">
+          Reference links for AI context (one per line, optional)
+        </label>
+        <p className="mb-1.5 text-xs text-slate-500">
+          Source articles, press releases, or pages behind this post. These
+          are crawled to ground the AI&apos;s writing in real facts — they are
+          <strong> not shown to employees</strong> in the feed (use the
+          &quot;Links&quot; field above for anything that should be visible).
+        </p>
+        <textarea
+          name="contextLinks"
+          rows={3}
+          defaultValue={defaultValues?.contextLinks?.join("\n")}
+          placeholder="https://source-article.example/press-release"
           className="w-full resize-y rounded-lg border border-slate-300 px-3 py-2 font-mono text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
         />
       </div>

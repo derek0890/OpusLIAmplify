@@ -37,15 +37,17 @@ model User {
 }
 
 model Post {
-  id           String     @id @default(cuid())
-  caption      String
-  creativeUrl  String?
-  linksJson    String     @default("[]")
-  status       PostStatus @default(DRAFT)
-  createdById  String
-  createdBy    User       @relation("PostAuthor", fields: [createdById], references: [id])
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
+  id                String     @id @default(cuid())
+  caption           String
+  creativeUrl       String?
+  linksJson         String     @default("[]")
+  contextLinksJson  String     @default("[]")
+  contextBrief      String?
+  status            PostStatus @default(DRAFT)
+  createdById       String
+  createdBy         User       @relation("PostAuthor", fields: [createdById], references: [id])
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
 
   amplifiedCopies AmplifiedCopy[]
 }

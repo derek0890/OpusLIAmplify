@@ -26,6 +26,7 @@ export default async function EditPostPage({
         defaultValues={{
           caption: post.caption,
           links: JSON.parse(post.linksJson || "[]"),
+          contextLinks: JSON.parse(post.contextLinksJson || "[]"),
           status: post.status,
           creativeUrl: post.creativeUrl,
         }}
