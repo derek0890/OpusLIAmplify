@@ -1,13 +1,28 @@
 "use client";
 
 import { useState } from "react";
+import dynamic from "next/dynamic";
 import Image from "next/image";
 import { AmplifyModal } from "@/components/amplify-modal";
+import { MediaCarousel } from "@/components/media-carousel";
+import { LinkifiedText } from "@/components/linkified-text";
+import type { MediaItem, MediaType } from "@/lib/media";
+import { isAnimatedGif } from "@/lib/media";
+
+const DocumentViewer = dynamic(() => import("@/components/document-viewer"), {
+  ssr: false,
+  loading: () => (
+    <div className="flex h-72 items-center justify-center border-y border-slate-200 bg-slate-50 text-sm text-slate-500">
+      Loading document…
+    </div>
+  ),
+});
 
 type Post = {
   id: string;
   caption: string;
-  creativeUrl: string | null;
+  mediaType: MediaType;
+  media: MediaItem[];
   links: string[];
   createdAt: string;
 };
@@ -30,6 +45,50 @@ function RepostIcon() {
       <path d="M7 22l-4-4 4-4" />
       <path d="M21 13v2a4 4 0 0 1-4 4H3" />
     </svg>
+  );
+}
+
+function PostMedia({ mediaType, media }: { mediaType: MediaType; media: MediaItem[] }) {
+  if (mediaType === "NONE" || media.length === 0) return null;
+
+  if (mediaType === "CAROUSEL") {
+    return <MediaCarousel images={media} />;
+  }
+
+  if (mediaType === "VIDEO") {
+    return (
+      <video
+        controls
+        playsInline
+        preload="metadata"
+        className="w-full bg-black"
+        src={media[0].url}
+      >
+        Your browser doesn&apos;t support embedded video.
+      </video>
+    );
+  }
+
+  if (mediaType === "DOCUMENT") {
+    return <DocumentViewer url={media[0].url} name={media[0].name} />;
+  }
+
+  // IMAGE
+  const item = media[0];
+  if (isAnimatedGif(item)) {
+    return (
+      <div className="relative">
+        {/* eslint-disable-next-line @next/next/no-img-element -- next/image would strip GIF animation */}
+        <img src={item.url} alt="" className="w-full object-cover" />
+        <span className="absolute left-2 top-2 rounded bg-black/60 px-1.5 py-0.5 text-[10px] font-semibold tracking-wide text-white">
+          GIF
+        </span>
+      </div>
+    );
+  }
+
+  return (
+    <Image src={item.url} alt="" width={600} height={400} className="w-full object-cover" />
   );
 }
 
@@ -56,7 +115,7 @@ export function FeedPostCard({ post }: { post: Post }) {
       </div>
 
       <p className="whitespace-pre-wrap px-4 py-3 text-sm leading-relaxed text-slate-800">
-        {post.caption}
+        <LinkifiedText text={post.caption} />
       </p>
 
       {post.links.length > 0 && (
@@ -75,15 +134,7 @@ export function FeedPostCard({ post }: { post: Post }) {
         </div>
       )}
 
-      {post.creativeUrl && (
-        <Image
-          src={post.creativeUrl}
-          alt=""
-          width={600}
-          height={400}
-          className="w-full object-cover"
-        />
-      )}
+      <PostMedia mediaType={post.mediaType} media={post.media} />
 
       <div className="flex items-center border-t border-slate-100 px-2 py-1">
         <button

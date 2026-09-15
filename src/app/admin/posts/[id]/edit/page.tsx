@@ -28,7 +28,8 @@ export default async function EditPostPage({
           links: JSON.parse(post.linksJson || "[]"),
           contextLinks: JSON.parse(post.contextLinksJson || "[]"),
           status: post.status,
-          creativeUrl: post.creativeUrl,
+          mediaType: post.mediaType,
+          media: JSON.parse(post.mediaJson || "[]"),
         }}
       />
     </div>

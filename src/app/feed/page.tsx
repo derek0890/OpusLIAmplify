@@ -20,7 +20,8 @@ export default async function FeedPage() {
             post={{
               id: post.id,
               caption: post.caption,
-              creativeUrl: post.creativeUrl,
+              mediaType: post.mediaType,
+              media: JSON.parse(post.mediaJson || "[]"),
               links: JSON.parse(post.linksJson || "[]"),
               createdAt: post.createdAt.toISOString(),
             }}

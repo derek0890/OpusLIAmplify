@@ -2,11 +2,20 @@ import Link from "next/link";
 import Image from "next/image";
 import { prisma } from "@/lib/prisma";
 import { deletePost, setPostStatus } from "@/lib/actions/posts";
+import type { MediaItem } from "@/lib/media";
 
 const statusStyles: Record<string, string> = {
   DRAFT: "bg-slate-100 text-slate-600",
   PUBLISHED: "bg-green-100 text-green-700",
   ARCHIVED: "bg-amber-100 text-amber-700",
+};
+
+const mediaTypeLabels: Record<string, string> = {
+  NONE: "Text only",
+  IMAGE: "Image",
+  CAROUSEL: "Carousel",
+  VIDEO: "Video",
+  DOCUMENT: "Document",
 };
 
 export default async function AdminPostsPage() {
@@ -40,22 +49,39 @@ export default async function AdminPostsPage() {
         <div className="space-y-3">
           {posts.map((post) => {
             const links: string[] = JSON.parse(post.linksJson || "[]");
+            const media: MediaItem[] = JSON.parse(post.mediaJson || "[]");
+            const firstImage =
+              post.mediaType === "IMAGE" || post.mediaType === "CAROUSEL" ? media[0] : null;
             return (
               <div
                 key={post.id}
                 className="flex gap-4 rounded-xl border border-slate-200 bg-white p-4"
               >
-                {post.creativeUrl ? (
-                  <Image
-                    src={post.creativeUrl}
-                    alt=""
-                    width={96}
-                    height={96}
-                    className="h-24 w-24 flex-shrink-0 rounded-lg object-cover"
-                  />
+                {firstImage ? (
+                  <div className="relative h-24 w-24 flex-shrink-0">
+                    <Image
+                      src={firstImage.url}
+                      alt=""
+                      width={96}
+                      height={96}
+                      className="h-24 w-24 rounded-lg object-cover"
+                    />
+                    {post.mediaType === "CAROUSEL" && media.length > 1 && (
+                      <span className="absolute bottom-1 right-1 rounded bg-black/60 px-1.5 py-0.5 text-[10px] font-medium text-white">
+                        +{media.length - 1}
+                      </span>
+                    )}
+                  </div>
                 ) : (
-                  <div className="flex h-24 w-24 flex-shrink-0 items-center justify-center rounded-lg bg-slate-100 text-xs text-slate-400">
-                    No image
+                  <div className="flex h-24 w-24 flex-shrink-0 flex-col items-center justify-center gap-1 rounded-lg bg-slate-100 text-xs text-slate-400">
+                    <span className="text-xl">
+                      {post.mediaType === "VIDEO"
+                        ? "🎬"
+                        : post.mediaType === "DOCUMENT"
+                          ? "📄"
+                          : "—"}
+                    </span>
+                    {post.mediaType === "NONE" && "No media"}
                   </div>
                 )}
 
@@ -65,6 +91,9 @@ export default async function AdminPostsPage() {
                       className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusStyles[post.status]}`}
                     >
                       {post.status}
+                    </span>
+                    <span className="text-xs text-slate-400">
+                      {mediaTypeLabels[post.mediaType]}
                     </span>
                     {links.length > 0 && (
                       <span className="text-xs text-slate-400">

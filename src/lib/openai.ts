@@ -89,7 +89,15 @@ export async function generateAmplifiedCopy({
     "You write LinkedIn repost captions and comments for employees at Opus Technologies who are amplifying",
     "a company post. Follow the writing-instructions document below exactly — every rule, length target,",
     "and item in the 'what to avoid' list. Output ONLY the finished copy text: no preamble, no quotation",
-    "marks, no markdown, no labels, no word count notes.",
+    "marks, no markdown formatting (no #, *, ** etc.), no labels, no word count notes.",
+    "",
+    "Formatting: real LinkedIn posts are never one dense block of text. Break the copy into short",
+    "paragraphs — roughly one beat of the storyline per paragraph (e.g. hook, then development, then the",
+    "closing thought) — separated by a single blank line, the way a person would actually format a LinkedIn",
+    "post. Each paragraph should usually be one to two sentences. This is a visual/formatting choice only —",
+    "it must still read as one continuous, connected storyline per the writing instructions below, not",
+    "disconnected chunks. A very short comment may stay as a single paragraph if breaking it up would feel",
+    "artificial.",
     "",
     "# Writing instructions",
     writingInstructions,
@@ -97,8 +105,8 @@ export async function generateAmplifiedCopy({
 
   const kindInstruction =
     type === "REPOST"
-      ? "Write a REPOST caption (target ~80 words per the length rules above): the text an employee adds above the shared post when they reshare it on their own LinkedIn profile."
-      : "Write a COMMENT (target ~45 words per the length rules above): a reply the employee posts directly on the original company post. Do not repeat the original post.";
+      ? "Write a REPOST caption (target ~80 words per the length rules above, formatted as 2-4 short paragraphs per the formatting note above): the text an employee adds above the shared post when they reshare it on their own LinkedIn profile."
+      : "Write a COMMENT (target ~45 words per the length rules above): a reply the employee posts directly on the original company post. Do not repeat the original post. Usually one short paragraph; split into two only if there's a natural beat change.";
 
   const linksBlock =
     postLinks.length > 0

@@ -1,10 +1,12 @@
 # Opus Amplify
 
 An employee advocacy portal for Opus Technologies. Marketing uploads posts
-(caption, creative image, public links, and optional reference links for AI
-context) in an admin panel. Employees browse them in a LinkedIn-style feed
-and hit **Comment** or **Repost** directly on any post — two OpenAI agents
-research the post's sources and write a unique caption or comment, styled
+in an admin panel — caption, any LinkedIn content type (single image, GIF,
+multi-image carousel, video, or PDF document), public links, and optional
+reference links for AI context. Employees browse them in a feed rendered to
+look and behave like the real LinkedIn feed, and hit **Comment** or
+**Repost** directly on any post — two OpenAI agents research the post's
+sources and write a unique, properly paragraphed caption or comment, styled
 from an editable Markdown writing guide, which the employee copies and
 pastes onto their own LinkedIn profile.
 
@@ -91,6 +93,39 @@ Every generation call:
    cached (only the research brief is cached, since the underlying source
    facts don't change between requests).
 
+### Copy formatting
+
+Generated captions and comments are formatted like a real LinkedIn post —
+short paragraphs (roughly one beat of the storyline each: hook, development,
+close) separated by blank lines, not one dense block of text. This comes
+from an explicit formatting instruction in `src/lib/openai.ts`
+(`generateAmplifiedCopy`); the `\n\n` breaks flow straight through the
+editable textarea and the clipboard copy into LinkedIn's own post composer.
+
+### Post content types
+
+Posts support every content type LinkedIn itself supports, chosen per-post
+in the admin form:
+
+| Type | Admin uploads | Feed renders as |
+|---|---|---|
+| Text only | — | caption only |
+| Image | 1 image (PNG/JPEG/WEBP/GIF, ≤8MB) | full-width image; an uploaded GIF gets a "GIF" badge and is served unoptimized so the animation isn't stripped |
+| Carousel | 2–20 images | swipeable carousel (`src/components/media-carousel.tsx`) with arrow controls, a page counter, and dot indicators |
+| Video | 1 file (MP4/WEBM/MOV, ≤100MB) | native HTML5 `<video controls>` |
+| Document | 1 PDF (≤20MB) | swipeable, paginated document viewer (`src/components/document-viewer.tsx`, via `react-pdf`/pdfjs) with a title bar and page counter, matching LinkedIn's PDF "document post" carousel |
+
+Uploaded files are validated by MIME type and size in
+`src/lib/actions/posts.ts` and saved to `public/uploads` (see Production
+notes on swapping this for cloud storage). A post's media type and files are
+stored as `Post.mediaType` + `Post.mediaJson` (an array of `{ url, name,
+mimeType }`), not a single `creativeUrl` — see `src/lib/media.ts`.
+
+Any URL typed directly into the caption text is rendered as a clickable
+link in the feed (`src/components/linkified-text.tsx`), the same way
+LinkedIn auto-links URLs typed into a real post — this is in addition to,
+not instead of, the separate "Links" field.
+
 ## Getting started
 
 ```bash
@@ -146,11 +181,20 @@ whatever is saved there as the copywriter agent's instructions verbatim.
   instances, switch `datasource db` in `prisma/schema.prisma` to
   `provider = "postgresql"`, point `DATABASE_URL` at your Postgres instance,
   and re-run `npx prisma db push` (or set up `prisma migrate` instead).
-- **Uploaded creatives:** currently saved to `public/uploads` on local disk
+- **Uploaded media:** currently saved to `public/uploads` on local disk
   (fine for a single persistent server; not suitable for serverless/Vercel,
-  where the filesystem isn't persistent — swap `saveCreative` in
+  where the filesystem isn't persistent — swap `saveFile` in
   `src/lib/actions/posts.ts` for a cloud storage upload, e.g. S3 or Vercel
-  Blob, if you deploy there).
+  Blob, if you deploy there). Server Actions' body size limit is raised to
+  100MB in `next.config.ts` to allow video/PDF uploads — adjust alongside
+  `MAX_VIDEO_BYTES` / `MAX_DOCUMENT_BYTES` in `src/lib/media.ts` if you need
+  different caps.
+- **PDF rendering browser support:** `src/components/document-viewer.tsx`
+  includes a small polyfill for `Map.prototype.getOrInsertComputed`, a very
+  recent JS feature pdfjs-dist 6.x calls unconditionally — needed for
+  Chromium builds around version 141 and older (it's a no-op once the
+  browser supports the method natively). If PDF pages fail to render in a
+  particular browser, this is the first thing to check.
 - **`AUTH_SECRET`:** set a real random value in production
   (`openssl rand -base64 32`).
 - **Model names change fast.** The defaults in `src/lib/openai.ts`
