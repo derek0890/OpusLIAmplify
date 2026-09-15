@@ -6,10 +6,12 @@ type CopyType = "REPOST" | "COMMENT";
 
 export function AmplifyModal({
   postId,
+  postUrl,
   initialType,
   onClose,
 }: {
   postId: string;
+  postUrl: string;
   initialType: CopyType;
   onClose: () => void;
 }) {
@@ -93,6 +95,15 @@ export function AmplifyModal({
             Switch to {type === "REPOST" ? "comment" : "repost"} instead
           </button>
         </div>
+
+        <a
+          href={postUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mb-3 flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-blue-600 hover:bg-slate-100 hover:underline"
+        >
+          View the original post on LinkedIn ↗
+        </a>
 
         {loading && (
           <div className="flex items-center justify-center py-10 text-sm text-slate-500">

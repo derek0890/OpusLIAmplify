@@ -9,6 +9,7 @@ type Props = {
   submitLabel: string;
   defaultValues?: {
     caption?: string;
+    postUrl?: string;
     links?: string[];
     contextLinks?: string[];
     status?: string;
@@ -17,8 +18,7 @@ type Props = {
   };
 };
 
-const MEDIA_TYPE_OPTIONS: { value: MediaType; label: string }[] = [
-  { value: "NONE", label: "Text only" },
+const MEDIA_TYPE_OPTIONS: { value: Exclude<MediaType, "NONE">; label: string }[] = [
   { value: "IMAGE", label: "Image" },
   { value: "CAROUSEL", label: "Carousel" },
   { value: "VIDEO", label: "Video" },
@@ -46,13 +46,25 @@ function isImageMime(mime: string): boolean {
 }
 
 export function PostForm({ action, submitLabel, defaultValues }: Props) {
-  const [mediaType, setMediaType] = useState<MediaType>(defaultValues?.mediaType ?? "NONE");
+  const [textOnly, setTextOnly] = useState(
+    defaultValues?.mediaType != null && defaultValues.mediaType === "NONE",
+  );
+  const [mediaType, setMediaType] = useState<Exclude<MediaType, "NONE">>(
+    defaultValues?.mediaType && defaultValues.mediaType !== "NONE"
+      ? defaultValues.mediaType
+      : "IMAGE",
+  );
   const [previews, setPreviews] = useState<{ url: string; mime: string; name: string }[]>(
     (defaultValues?.media ?? []).map((m) => ({ url: m.url, mime: m.mimeType, name: m.name })),
   );
 
-  function handleTypeChange(next: MediaType) {
+  function handleTypeChange(next: Exclude<MediaType, "NONE">) {
     setMediaType(next);
+    setPreviews([]);
+  }
+
+  function handleTextOnlyChange(checked: boolean) {
+    setTextOnly(checked);
     setPreviews([]);
   }
 
@@ -68,7 +80,7 @@ export function PostForm({ action, submitLabel, defaultValues }: Props) {
     <form action={action} className="space-y-5">
       <div>
         <label className="mb-1 block text-sm font-medium text-slate-700">
-          Caption
+          Post copy <span className="text-red-500">*</span>
         </label>
         <textarea
           name="caption"
@@ -81,32 +93,49 @@ export function PostForm({ action, submitLabel, defaultValues }: Props) {
       </div>
 
       <div>
-        <label className="mb-1 block text-sm font-medium text-slate-700">
-          Post content
-        </label>
-        <input type="hidden" name="mediaType" value={mediaType} />
-        <div className="flex flex-wrap gap-1.5">
-          {MEDIA_TYPE_OPTIONS.map((opt) => (
-            <button
-              key={opt.value}
-              type="button"
-              onClick={() => handleTypeChange(opt.value)}
-              className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
-                mediaType === opt.value
-                  ? "border-blue-600 bg-blue-50 text-blue-700"
-                  : "border-slate-300 text-slate-600 hover:bg-slate-50"
-              }`}
-            >
-              {opt.label}
-            </button>
-          ))}
+        <div className="mb-1 flex items-center justify-between">
+          <label className="block text-sm font-medium text-slate-700">
+            Post creative {!textOnly && <span className="text-red-500">*</span>}
+          </label>
+          <label className="flex items-center gap-1.5 text-xs font-medium text-slate-600">
+            <input
+              type="checkbox"
+              name="textOnly"
+              checked={textOnly}
+              onChange={(e) => handleTextOnlyChange(e.target.checked)}
+              className="h-3.5 w-3.5 rounded border-slate-300"
+            />
+            This is a text-only post (no creative)
+          </label>
         </div>
 
-        {mediaType !== "NONE" && (
+        <input type="hidden" name="mediaType" value={mediaType} />
+
+        <div className={textOnly ? "pointer-events-none opacity-40" : undefined}>
+          <div className="flex flex-wrap gap-1.5">
+            {MEDIA_TYPE_OPTIONS.map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                disabled={textOnly}
+                onClick={() => handleTypeChange(opt.value)}
+                className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
+                  mediaType === opt.value
+                    ? "border-blue-600 bg-blue-50 text-blue-700"
+                    : "border-slate-300 text-slate-600 hover:bg-slate-50"
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+
           <div className="mt-3">
             <input
               type="file"
               name="media"
+              disabled={textOnly}
+              required={!textOnly && (defaultValues?.media?.length ?? 0) === 0}
               accept={ACCEPT_BY_TYPE[mediaType]}
               multiple={mediaType === "CAROUSEL"}
               onChange={(e) => handleFiles(e.target.files)}
@@ -150,12 +179,31 @@ export function PostForm({ action, submitLabel, defaultValues }: Props) {
               </div>
             )}
           </div>
-        )}
+        </div>
       </div>
 
       <div>
         <label className="mb-1 block text-sm font-medium text-slate-700">
-          Links (one per line, optional)
+          Link to the original post <span className="text-red-500">*</span>
+        </label>
+        <p className="mb-1.5 text-xs text-slate-500">
+          The URL of this post on LinkedIn. Employees see this in the
+          Comment/Repost dialog so they can open the real post to engage
+          with it.
+        </p>
+        <input
+          type="url"
+          name="postUrl"
+          required
+          defaultValue={defaultValues?.postUrl}
+          placeholder="https://www.linkedin.com/posts/opustechnologies_..."
+          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+        />
+      </div>
+
+      <div>
+        <label className="mb-1 block text-sm font-medium text-slate-700">
+          Links within the copy (one per line, optional)
         </label>
         <textarea
           name="links"
@@ -174,7 +222,8 @@ export function PostForm({ action, submitLabel, defaultValues }: Props) {
           Source articles, press releases, or pages behind this post. These
           are crawled to ground the AI&apos;s writing in real facts — they are
           <strong> not shown to employees</strong> in the feed (use the
-          &quot;Links&quot; field above for anything that should be visible).
+          &quot;Links within the copy&quot; field above for anything that
+          should be visible).
         </p>
         <textarea
           name="contextLinks"

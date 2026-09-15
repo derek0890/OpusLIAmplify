@@ -25,6 +25,7 @@ export default async function EditPostPage({
         submitLabel="Save changes"
         defaultValues={{
           caption: post.caption,
+          postUrl: post.postUrl,
           links: JSON.parse(post.linksJson || "[]"),
           contextLinks: JSON.parse(post.contextLinksJson || "[]"),
           status: post.status,

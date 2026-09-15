@@ -21,6 +21,7 @@ const DocumentViewer = dynamic(() => import("@/components/document-viewer"), {
 type Post = {
   id: string;
   caption: string;
+  postUrl: string;
   mediaType: MediaType;
   media: MediaItem[];
   links: string[];
@@ -156,6 +157,7 @@ export function FeedPostCard({ post }: { post: Post }) {
       {activeType && (
         <AmplifyModal
           postId={post.id}
+          postUrl={post.postUrl}
           initialType={activeType}
           onClose={() => setActiveType(null)}
         />

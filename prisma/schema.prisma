@@ -47,6 +47,7 @@ model User {
 model Post {
   id                String     @id @default(cuid())
   caption           String
+  postUrl           String
   mediaType         MediaType  @default(NONE)
   mediaJson         String     @default("[]")
   linksJson         String     @default("[]")

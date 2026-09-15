@@ -53,6 +53,7 @@ async function main() {
       data: {
         caption:
           "We just shipped a major update to our platform that cuts customer onboarding time in half. Huge thanks to the engineering and CX teams who made this happen. Read more about what's new:",
+        postUrl: "https://www.linkedin.com/posts/opustechnologies_onboarding-update-activity-0000000000001",
         linksJson: JSON.stringify(["https://opustechnologies.example/blog/onboarding-update"]),
         status: "PUBLISHED",
         createdById: admin.id,
@@ -62,6 +63,7 @@ async function main() {
       data: {
         caption:
           "Opus Technologies is hiring across engineering, product, and design. If you want to build tools that real teams rely on every day, we'd love to talk.",
+        postUrl: "https://www.linkedin.com/posts/opustechnologies_hiring-activity-0000000000002",
         linksJson: JSON.stringify(["https://opustechnologies.example/careers"]),
         status: "PUBLISHED",
         createdById: admin.id,

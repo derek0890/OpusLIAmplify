@@ -47,6 +47,19 @@ function parseLinks(raw: string): string[] {
     .slice(0, 10);
 }
 
+function parsePostUrl(raw: FormDataEntryValue | null): string {
+  const value = String(raw ?? "").trim();
+  if (!value) {
+    throw new Error("Link to the original post is required.");
+  }
+  try {
+    new URL(value);
+  } catch {
+    throw new Error("Link to the original post must be a valid URL.");
+  }
+  return value;
+}
+
 function mb(bytes: number): string {
   return `${Math.round(bytes / (1024 * 1024))}MB`;
 }
@@ -137,24 +150,41 @@ export async function createPost(formData: FormData) {
   const session = await requireAdmin();
 
   const caption = String(formData.get("caption") ?? "").trim();
+  const postUrl = parsePostUrl(formData.get("postUrl"));
   const linksRaw = String(formData.get("links") ?? "");
   const contextLinksRaw = String(formData.get("contextLinks") ?? "");
   const status = String(formData.get("status") ?? "DRAFT");
-  const mediaType = parseMediaType(formData.get("mediaType"));
+  const textOnly = formData.get("textOnly") === "on";
   const files = formData.getAll("media");
 
   if (!caption) {
-    throw new Error("Caption is required.");
+    throw new Error("Post copy (caption) is required.");
   }
 
-  const media = await processMedia(mediaType, files as File[]);
-  if (media === null) {
-    throw new Error(`Upload a file for the selected media type (${mediaType.toLowerCase()}).`);
+  let mediaType: MediaType;
+  let media: MediaItem[];
+
+  if (textOnly) {
+    mediaType = "NONE";
+    media = [];
+  } else {
+    mediaType = parseMediaType(formData.get("mediaType"));
+    if (mediaType === "NONE") {
+      throw new Error(
+        "Post creative is required — upload a file, or check \"text-only post\".",
+      );
+    }
+    const processed = await processMedia(mediaType, files as File[]);
+    if (processed === null) {
+      throw new Error(`Upload a file for the selected media type (${mediaType.toLowerCase()}).`);
+    }
+    media = processed;
   }
 
   await prisma.post.create({
     data: {
       caption,
+      postUrl,
       mediaType,
       mediaJson: JSON.stringify(media),
       linksJson: JSON.stringify(parseLinks(linksRaw)),
@@ -177,31 +207,35 @@ export async function updatePost(postId: string, formData: FormData) {
   }
 
   const caption = String(formData.get("caption") ?? "").trim();
+  const postUrl = parsePostUrl(formData.get("postUrl"));
   const linksRaw = String(formData.get("links") ?? "");
   const contextLinksRaw = String(formData.get("contextLinks") ?? "");
   const status = String(formData.get("status") ?? "DRAFT");
-  const mediaType = parseMediaType(formData.get("mediaType"));
+  const textOnly = formData.get("textOnly") === "on";
   const files = formData.getAll("media");
 
   if (!caption) {
-    throw new Error("Caption is required.");
+    throw new Error("Post copy (caption) is required.");
   }
 
   const contextLinksJson = JSON.stringify(parseLinks(contextLinksRaw));
 
   const data: {
     caption: string;
+    postUrl: string;
     linksJson: string;
     contextLinksJson: string;
     contextBrief?: null;
     status: "DRAFT" | "PUBLISHED" | "ARCHIVED";
-    mediaType?: MediaType;
+    mediaType: MediaType;
     mediaJson?: string;
   } = {
     caption,
+    postUrl,
     linksJson: JSON.stringify(parseLinks(linksRaw)),
     contextLinksJson,
     status: status === "PUBLISHED" || status === "ARCHIVED" ? status : "DRAFT",
+    mediaType: existing.mediaType,
   };
 
   // Reference links changed — drop the cached research brief so the next
@@ -210,17 +244,33 @@ export async function updatePost(postId: string, formData: FormData) {
     data.contextBrief = null;
   }
 
-  const media = await processMedia(mediaType, files as File[]);
-  if (media !== null) {
-    // New files were uploaded (or the type is NONE), so replace the media set.
-    data.mediaType = mediaType;
-    data.mediaJson = JSON.stringify(media);
-  } else if (mediaType !== existing.mediaType) {
-    throw new Error(
-      `Upload a file to switch this post's media type to ${mediaType.toLowerCase()}.`,
-    );
+  if (textOnly) {
+    data.mediaType = "NONE";
+    data.mediaJson = "[]";
+  } else {
+    const mediaType = parseMediaType(formData.get("mediaType"));
+    if (mediaType === "NONE") {
+      throw new Error(
+        "Post creative is required — upload a file, or check \"text-only post\".",
+      );
+    }
+
+    const media = await processMedia(mediaType, files as File[]);
+    if (media !== null) {
+      // New files were uploaded, so replace the media set.
+      data.mediaType = mediaType;
+      data.mediaJson = JSON.stringify(media);
+    } else {
+      const hadExistingMediaOfThisType =
+        existing.mediaType !== "NONE" && (existing.mediaType as string) === (mediaType as string);
+      if (!hadExistingMediaOfThisType) {
+        throw new Error(
+          `Upload a file to set this post's media type to ${mediaType.toLowerCase()}.`,
+        );
+      }
+    }
+    // else: same media type, no new files — keep the existing media untouched.
   }
-  // else: same media type, no new files — keep the existing media untouched.
 
   await prisma.post.update({ where: { id: postId }, data });
 

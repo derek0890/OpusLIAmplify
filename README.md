@@ -61,10 +61,11 @@ env vars — see the note on model naming under Production notes below.
 ### Data model (`prisma/schema.prisma`)
 
 - `User` — email/password login, `ADMIN` or `EMPLOYEE` role
-- `Post` — caption, creative image path, public links shown in the feed
-  (`linksJson`), admin-only reference links crawled for AI context
-  (`contextLinksJson`), the cached research brief (`contextBrief`), status
-  (`DRAFT` / `PUBLISHED` / `ARCHIVED`)
+- `Post` — caption, required `postUrl` (the original LinkedIn post),
+  media type + uploaded files (`mediaType`/`mediaJson`), public links shown
+  in the feed (`linksJson`), admin-only reference links crawled for AI
+  context (`contextLinksJson`), the cached research brief (`contextBrief`),
+  status (`DRAFT` / `PUBLISHED` / `ARCHIVED`)
 - `StyleGuide` — the Markdown writing-instructions document, editable from
   the admin panel (seeded from the uploaded LinkedIn writing-instructions
   doc)
@@ -124,7 +125,28 @@ mimeType }`), not a single `creativeUrl` — see `src/lib/media.ts`.
 Any URL typed directly into the caption text is rendered as a clickable
 link in the feed (`src/components/linkified-text.tsx`), the same way
 LinkedIn auto-links URLs typed into a real post — this is in addition to,
-not instead of, the separate "Links" field.
+not instead of, the separate "Links within the copy" field.
+
+### Required fields
+
+The admin form requires three things for every post: **post copy** (the
+caption), **post creative** (an image/carousel/video/document), and the
+**link to the original post** (the real LinkedIn URL, shown to employees in
+the Comment/Repost dialog — see below). Post creative is the one exception:
+check **"This is a text-only post"** next to the media picker to mark a post
+as intentionally text-only — the media picker greys out and creative is no
+longer required, but the original-post link still is. "Links within the
+copy" (shown in the feed under the caption) stays optional and supports
+multiple URLs, one per line.
+
+### Original post link
+
+Every post also carries a required `postUrl` — the actual URL of the post
+on LinkedIn. It's shown as a "View the original post on LinkedIn ↗" link at
+the top of the Comment/Repost dialog (`src/components/amplify-modal.tsx`),
+so an employee generating copy can jump straight to the real post to paste
+it there — this is separate from, and always required regardless of, the
+optional "Links within the copy" field.
 
 ## Getting started
 
