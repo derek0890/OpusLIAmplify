@@ -35,13 +35,58 @@ model User {
   id             String   @id @default(cuid())
   email          String   @unique
   name           String
-  passwordHash   String
+  // Null for users provisioned via SSO, who never set a password.
+  passwordHash   String?
   role           Role     @default(EMPLOYEE)
+  // Revokes access without losing the account/history, distinct from role.
+  isActive       Boolean  @default(true)
   createdAt      DateTime @default(now())
 
   posts          Post[]          @relation("PostAuthor")
   amplifiedCopies AmplifiedCopy[]
   styleGuideEdits StyleGuide[]
+  accounts        Account[]
+  sessions        Session[]
+}
+
+// Auth.js Prisma adapter contract (links an SSO identity to a User).
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+// Unused while session.strategy is "jwt", but required by the adapter's
+// expected schema shape — keeps the door open to switch to database
+// sessions later without another migration.
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
 }
 
 model Post {

@@ -29,8 +29,9 @@ LinkedIn's Marketing Developer Platform for Community Management API access
 
 - **Next.js 16** (App Router, TypeScript, Tailwind CSS 4)
 - **Prisma + SQLite** for data (swap to Postgres for production — see below)
-- **Auth.js / NextAuth v5** with a credentials (email + password) provider
-  and two roles: `ADMIN` (marketing) and `EMPLOYEE`
+- **Auth.js / NextAuth v5** with email/password and an optional enterprise
+  SSO (OIDC) provider, and two roles: `ADMIN` (marketing) and `EMPLOYEE` —
+  see "Deploying for a company's SSO" below
 - **OpenAI API** (`openai` SDK, Responses API) — two agents, each on a model
   picked for its job (see below)
 
@@ -148,6 +149,80 @@ so an employee generating copy can jump straight to the real post to paste
 it there — this is separate from, and always required regardless of, the
 optional "Links within the copy" field.
 
+## Deploying for a company's SSO
+
+This app is built to be "whiteboxed" — handed to a company as its own
+deployment, with its own database, its own branding, and its own identity
+provider. It is **not** multi-tenant: one deployment serves one company. If
+you need one shared deployment serving many companies at once, that's a
+bigger change (tenant isolation on every table, per-tenant IdP config in the
+database instead of env vars) that this architecture doesn't attempt.
+
+### Connecting the company's identity provider
+
+Auth.js's generic OIDC provider (`src/auth.ts`) covers any OpenID Connect
+compliant IdP without custom code — Okta, Azure AD / Entra ID, Google
+Workspace, OneLogin, Ping, Auth0, and most others. Set three env vars from
+the company's IdP admin console (app type: "OIDC / OAuth2", redirect URI:
+`https://<your-deployment>/api/auth/callback/sso`):
+
+```bash
+SSO_ISSUER="https://your-company.okta.com"      # the IdP's OIDC issuer URL
+SSO_CLIENT_ID="..."
+SSO_CLIENT_SECRET="..."
+SSO_PROVIDER_NAME="Okta"                         # shown on the login button
+```
+
+Leave all three unset and the app falls back to email/password only — no
+code change needed either way, `src/auth.ts` builds the provider list from
+whichever env vars are present. Once SSO is confirmed working, set
+`DISABLE_PASSWORD_LOGIN="true"` to drop the password form entirely and go
+SSO-only.
+
+If a company's IdP is SAML-only (no OIDC support — mostly older on-prem
+setups), don't hand-roll SAML: add
+[BoxyHQ SAML Jackson](https://github.com/boxyhq/jackson) (open source,
+self-hostable) as a SAML→OIDC broker in front of it, then point `SSO_ISSUER`
+at Jackson instead of the IdP directly. The same pattern Retool, Cal.com,
+and Vercel use for enterprise SSO.
+
+The first time someone signs in via SSO, a `User` row is created for them
+automatically ("just-in-time provisioning" — nobody has to be pre-created).
+New SSO users default to `EMPLOYEE`. To auto-grant `ADMIN` on first login
+instead (useful for the people setting the deployment up), list their
+emails in `INITIAL_ADMIN_EMAILS` (comma-separated) before they sign in —
+after that, admin status is managed from the app itself (next section).
+
+### Adding and removing admins
+
+**Admin → Team** (`/admin/team`) lists everyone who has ever signed in,
+whether via SSO or password, and lets an admin:
+
+- **Make admin / Remove admin** — toggles the `ADMIN` ↔ `EMPLOYEE` role.
+- **Deactivate / Reactivate** — revokes or restores login access entirely,
+  without deleting the account or their post/copy history.
+
+Both actions are blocked from leaving the deployment with zero active
+admins (the button disables itself on the last one), and nobody can
+deactivate their own account — both enforced server-side in
+`src/lib/actions/users.ts`, not just hidden in the UI.
+
+Role and active-status changes take effect on the user's **next request**,
+not next login: `src/auth.ts`'s `jwt` callback re-reads the user's current
+role/`isActive` from the database on every request rather than trusting
+what was baked into the token at sign-in, and ends the session outright if
+the account is deactivated or gone.
+
+### What changed in the data model to support this
+
+- `User.passwordHash` is now optional — SSO users never set one.
+- `User.isActive` — the deactivate/reactivate flag.
+- `Account` / `Session` / `VerificationToken` — Auth.js's standard Prisma
+  adapter schema, added so first-time SSO sign-ins can provision a `User`
+  row automatically (`@auth/prisma-adapter`). `Session` goes unused while
+  `session.strategy` stays `"jwt"`, but is kept so switching to database
+  sessions later doesn't need another migration.
+
 ## Getting started
 
 ```bash
@@ -168,6 +243,14 @@ AUTH_SECRET="generate-a-random-string-for-production"
 OPENAI_API_KEY="sk-..."          # required for AI copy generation — get one at https://platform.openai.com/api-keys
 OPENAI_RESEARCH_MODEL="gpt-5.4-nano"  # optional, see Production notes
 OPENAI_COPY_MODEL="gpt-5.5"           # optional, see Production notes
+
+# Optional — enterprise SSO, see "Deploying for a company's SSO" above.
+# SSO_ISSUER="https://your-company.okta.com"
+# SSO_CLIENT_ID="..."
+# SSO_CLIENT_SECRET="..."
+# SSO_PROVIDER_NAME="Okta"
+# INITIAL_ADMIN_EMAILS="admin@your-company.com"
+# DISABLE_PASSWORD_LOGIN="false"
 ```
 
 Without `OPENAI_API_KEY` set, everything else works (admin panel, feed,

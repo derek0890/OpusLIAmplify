@@ -7,6 +7,7 @@ import { signOut } from "next-auth/react";
 const links = [
   { href: "/admin/posts", label: "Posts" },
   { href: "/admin/style-guide", label: "Style Guide" },
+  { href: "/admin/team", label: "Team" },
 ];
 
 export function AdminNav({ userName }: { userName: string }) {

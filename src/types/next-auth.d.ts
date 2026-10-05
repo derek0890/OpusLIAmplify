@@ -10,6 +10,7 @@ declare module "next-auth" {
 
   interface User {
     role: "ADMIN" | "EMPLOYEE";
+    isActive?: boolean;
   }
 }
 
