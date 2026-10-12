@@ -61,7 +61,7 @@ export default async function TeamPage() {
                     <span
                       className={`rounded-full px-2 py-0.5 text-xs font-medium ${
                         user.role === "ADMIN"
-                          ? "bg-blue-100 text-blue-700"
+                          ? "bg-accent-soft text-accent-strong"
                           : "bg-slate-100 text-slate-600"
                       }`}
                     >
@@ -92,16 +92,16 @@ export default async function TeamPage() {
                         name="jobTitle"
                         defaultValue={user.jobTitle ?? ""}
                         placeholder="Job title"
-                        className="w-32 rounded border border-slate-200 px-2 py-1 text-xs focus:border-blue-500 focus:outline-none"
+                        className="w-32 rounded border border-slate-200 px-2 py-1 text-xs focus:border-accent-strong focus:outline-none"
                       />
                       <input
                         type="text"
                         name="department"
                         defaultValue={user.department ?? ""}
                         placeholder="Department"
-                        className="w-32 rounded border border-slate-200 px-2 py-1 text-xs focus:border-blue-500 focus:outline-none"
+                        className="w-32 rounded border border-slate-200 px-2 py-1 text-xs focus:border-accent-strong focus:outline-none"
                       />
-                      <button className="self-start text-xs font-medium text-blue-600 hover:underline">
+                      <button className="self-start text-xs font-medium text-accent-strong hover:underline">
                         Save
                       </button>
                     </form>
@@ -134,7 +134,7 @@ export default async function TeamPage() {
                             await setUserRole(user.id, "ADMIN");
                           }}
                         >
-                          <button className="rounded-md border border-blue-300 px-3 py-1 text-xs font-medium text-blue-700 hover:bg-blue-50">
+                          <button className="rounded-md border border-accent-strong px-3 py-1 text-xs font-medium text-accent-strong hover:bg-accent-soft">
                             Make admin
                           </button>
                         </form>

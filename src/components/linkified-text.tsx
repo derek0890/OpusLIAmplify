@@ -30,7 +30,7 @@ export function LinkifiedText({ text }: { text: string }) {
               href={href}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-blue-600 hover:underline"
+              className="text-accent-strong hover:underline"
             >
               {href}
             </a>

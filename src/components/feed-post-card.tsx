@@ -99,7 +99,7 @@ export function FeedPostCard({ post }: { post: Post }) {
   return (
     <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
       <div className="flex items-center gap-3 px-4 pt-4">
-        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-600 text-sm font-bold text-white">
+        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accent text-sm font-bold text-accent-foreground">
           OT
         </div>
         <div>
@@ -127,7 +127,7 @@ export function FeedPostCard({ post }: { post: Post }) {
               href={link}
               target="_blank"
               rel="noopener noreferrer"
-              className="truncate text-xs font-medium text-blue-600 hover:underline"
+              className="truncate text-xs font-medium text-accent-strong hover:underline"
             >
               {link}
             </a>

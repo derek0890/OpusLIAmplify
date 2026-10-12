@@ -19,10 +19,10 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "Opus Amplify"
+args = "Relay"
 
 [[workflows.workflow]]
-name = "Opus Amplify"
+name = "Relay"
 author = "agent"
 
 [[workflows.workflow.tasks]]

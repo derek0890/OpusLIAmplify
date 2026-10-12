@@ -60,7 +60,7 @@ export const googleWorkspaceChannel: NotificationChannel = {
     const raw = buildRawMessage(
       senderEmail,
       toRecipients,
-      "New post published on Opus Amplify",
+      "New post published on Relay",
       `<p>A new post is ready to amplify.</p><p>${escapeHtml(post.caption)}</p><p><a href="${post.feedUrl}">Amplify it</a> &middot; <a href="${post.postUrl}">View original</a></p>`,
     );
 

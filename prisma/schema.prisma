@@ -61,6 +61,7 @@ model User {
   sessions          Session[]
   teamsIntegrations TeamsIntegration[]
   createdInstances  WhiteboxInstance[]
+  brandingEdits     BrandingSettings[]
 }
 
 // Auth.js Prisma adapter contract (links an SSO identity to a User).
@@ -178,6 +179,17 @@ model Post {
   updatedAt        DateTime   @updatedAt
 
   amplifiedCopies AmplifiedCopy[]
+}
+
+// Singleton row holding THIS deployment's own visual branding, editable from
+// /admin/branding. Distinct from WhiteboxInstance, which only assembles
+// config for OTHER, separately-hosted deployments of the same codebase.
+model BrandingSettings {
+  id          String   @id @default(cuid())
+  accentColor String   @default("#4f46e5")
+  updatedById String
+  updatedBy   User     @relation(fields: [updatedById], references: [id])
+  updatedAt   DateTime @updatedAt
 }
 
 model StyleGuide {

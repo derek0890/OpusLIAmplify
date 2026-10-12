@@ -44,7 +44,7 @@ export async function fetchPageText(rawUrl: string): Promise<string | null> {
       signal: controller.signal,
       redirect: "follow",
       headers: {
-        "User-Agent": "OpusAmplifyBot/1.0 (+internal employee advocacy tool)",
+        "User-Agent": "RelayBot/1.0 (+internal employee advocacy tool)",
         Accept: "text/html,application/xhtml+xml",
       },
     });

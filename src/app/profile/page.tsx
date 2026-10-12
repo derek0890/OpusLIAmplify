@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { setOwnProfile } from "@/lib/actions/users";
+import { APP_NAME } from "@/lib/brand";
 
 const SOURCE_LABEL: Record<string, string> = {
   "sso-microsoft": "Auto-filled from Microsoft",
@@ -26,12 +27,12 @@ export default async function ProfilePage() {
       <header className="border-b border-slate-200 bg-white">
         <div className="mx-auto flex max-w-xl items-center justify-between px-4 py-3">
           <span className="flex items-center gap-2 text-sm font-semibold text-slate-900">
-            <span className="flex h-7 w-7 items-center justify-center rounded-md bg-blue-600 text-xs font-bold text-white">
-              O
+            <span className="flex h-7 w-7 items-center justify-center rounded-md bg-accent text-xs font-bold text-accent-foreground">
+              R
             </span>
-            Opus Amplify
+            {APP_NAME}
           </span>
-          <a href={backHref} className="text-sm font-medium text-blue-600 hover:underline">
+          <a href={backHref} className="text-sm font-medium text-accent-strong hover:underline">
             ← Back
           </a>
         </div>
@@ -57,7 +58,7 @@ export default async function ProfilePage() {
                 name="jobTitle"
                 defaultValue={user.jobTitle ?? ""}
                 placeholder="e.g. Senior Software Engineer"
-                className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
+                className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-accent-strong focus:outline-none"
               />
             </label>
             <label className="block">
@@ -67,7 +68,7 @@ export default async function ProfilePage() {
                 name="department"
                 defaultValue={user.department ?? ""}
                 placeholder="e.g. Engineering"
-                className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
+                className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-accent-strong focus:outline-none"
               />
             </label>
 
@@ -81,7 +82,7 @@ export default async function ProfilePage() {
 
             <button
               type="submit"
-              className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+              className="rounded-md bg-accent px-4 py-2 text-sm font-medium text-accent-foreground hover:bg-accent-hover"
             >
               Save
             </button>

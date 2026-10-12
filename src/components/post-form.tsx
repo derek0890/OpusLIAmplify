@@ -88,7 +88,7 @@ export function PostForm({ action, submitLabel, defaultValues }: Props) {
           rows={5}
           defaultValue={defaultValues?.caption}
           placeholder="What should this post say? Employees will see this exact copy in their feed. Any URL typed here becomes a clickable link automatically."
-          className="w-full resize-y rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+          className="w-full resize-y rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-accent-strong focus:ring-1 focus:ring-accent-strong"
         />
       </div>
 
@@ -121,7 +121,7 @@ export function PostForm({ action, submitLabel, defaultValues }: Props) {
                 onClick={() => handleTypeChange(opt.value)}
                 className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
                   mediaType === opt.value
-                    ? "border-blue-600 bg-blue-50 text-blue-700"
+                    ? "border-accent-strong bg-accent-soft text-accent-strong"
                     : "border-slate-300 text-slate-600 hover:bg-slate-50"
                 }`}
               >
@@ -197,7 +197,7 @@ export function PostForm({ action, submitLabel, defaultValues }: Props) {
           required
           defaultValue={defaultValues?.postUrl}
           placeholder="https://www.linkedin.com/posts/opustechnologies_..."
-          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-accent-strong focus:ring-1 focus:ring-accent-strong"
         />
       </div>
 
@@ -210,7 +210,7 @@ export function PostForm({ action, submitLabel, defaultValues }: Props) {
           rows={3}
           defaultValue={defaultValues?.links?.join("\n")}
           placeholder="https://opustechnologies.example/blog/post"
-          className="w-full resize-y rounded-lg border border-slate-300 px-3 py-2 font-mono text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+          className="w-full resize-y rounded-lg border border-slate-300 px-3 py-2 font-mono text-sm outline-none focus:border-accent-strong focus:ring-1 focus:ring-accent-strong"
         />
       </div>
 
@@ -230,7 +230,7 @@ export function PostForm({ action, submitLabel, defaultValues }: Props) {
           rows={3}
           defaultValue={defaultValues?.contextLinks?.join("\n")}
           placeholder="https://source-article.example/press-release"
-          className="w-full resize-y rounded-lg border border-slate-300 px-3 py-2 font-mono text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+          className="w-full resize-y rounded-lg border border-slate-300 px-3 py-2 font-mono text-sm outline-none focus:border-accent-strong focus:ring-1 focus:ring-accent-strong"
         />
       </div>
 
@@ -241,7 +241,7 @@ export function PostForm({ action, submitLabel, defaultValues }: Props) {
         <select
           name="status"
           defaultValue={defaultValues?.status ?? "DRAFT"}
-          className="rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+          className="rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-accent-strong focus:ring-1 focus:ring-accent-strong"
         >
           <option value="DRAFT">Draft (hidden from feed)</option>
           <option value="PUBLISHED">Published (visible in feed)</option>
@@ -253,7 +253,7 @@ export function PostForm({ action, submitLabel, defaultValues }: Props) {
 
       <button
         type="submit"
-        className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+        className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-accent-foreground hover:bg-accent-hover"
       >
         {submitLabel}
       </button>

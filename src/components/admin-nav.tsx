@@ -3,12 +3,14 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
+import { APP_NAME } from "@/lib/brand";
 
 const links = [
   { href: "/admin/posts", label: "Posts" },
   { href: "/admin/style-guide", label: "Style Guide" },
   { href: "/admin/team", label: "Team" },
   { href: "/admin/integrations", label: "Integrations" },
+  { href: "/admin/branding", label: "Branding" },
 ];
 
 export function AdminNav({
@@ -28,10 +30,10 @@ export function AdminNav({
       <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
         <div className="flex items-center gap-6">
           <span className="flex items-center gap-2 text-sm font-semibold text-slate-900">
-            <span className="flex h-7 w-7 items-center justify-center rounded-md bg-blue-600 text-xs font-bold text-white">
-              O
+            <span className="flex h-7 w-7 items-center justify-center rounded-md bg-accent text-xs font-bold text-accent-foreground">
+              R
             </span>
-            Opus Amplify Admin
+            {APP_NAME} Admin
           </span>
           <nav className="flex gap-1">
             {navLinks.map((link) => {
@@ -42,7 +44,7 @@ export function AdminNav({
                   href={link.href}
                   className={`rounded-md px-3 py-1.5 text-sm font-medium transition ${
                     active
-                      ? "bg-blue-50 text-blue-700"
+                      ? "bg-accent-soft text-accent-strong"
                       : "text-slate-600 hover:bg-slate-100"
                   }`}
                 >
@@ -53,7 +55,7 @@ export function AdminNav({
           </nav>
         </div>
         <div className="flex items-center gap-3">
-          <Link href="/profile" className="text-sm font-medium text-blue-600 hover:underline">
+          <Link href="/profile" className="text-sm font-medium text-accent-strong hover:underline">
             My Profile
           </Link>
           <span className="text-sm text-slate-500">{userName}</span>

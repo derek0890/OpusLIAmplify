@@ -22,7 +22,7 @@ function Field({
         type={type}
         name={name}
         placeholder={placeholder}
-        className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
+        className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-accent-strong focus:outline-none"
       />
       {help && <span className="mt-1 block text-xs text-slate-400">{help}</span>}
     </label>
@@ -53,7 +53,7 @@ export default async function NewInstancePage() {
   return (
     <div>
       <div className="mb-6">
-        <Link href="/admin/super" className="text-sm text-blue-600 hover:underline">
+        <Link href="/admin/super" className="text-sm text-accent-strong hover:underline">
           ← Back to instances
         </Link>
         <h1 className="mt-2 text-xl font-semibold text-slate-900">New Whitebox Instance</h1>
@@ -75,7 +75,7 @@ export default async function NewInstancePage() {
                 name="name"
                 required
                 placeholder="Acme Corp"
-                className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
+                className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-accent-strong focus:outline-none"
               />
             </label>
             <label className="block">
@@ -93,7 +93,7 @@ export default async function NewInstancePage() {
 
         <Section title="Slack" description="Either a bot token (recommended — the app will create and post to the channel itself) or a simpler webhook.">
           <Field label="Bot token" name="slackBotToken" placeholder="xoxb-..." />
-          <Field label="Channel name" name="slackChannelName" placeholder="opus-amplify-notifications" />
+          <Field label="Channel name" name="slackChannelName" placeholder="relay-notifications" />
           <Field label="Webhook URL (alternative)" name="slackWebhookUrl" placeholder="https://hooks.slack.com/services/..." />
         </Section>
 
@@ -102,7 +102,7 @@ export default async function NewInstancePage() {
           <Field label="Client secret" name="teamsClientSecret" type="password" />
           <Field label="Tenant ID" name="teamsTenantId" />
           <Field label="Team ID" name="teamsTeamId" />
-          <Field label="Channel name" name="teamsChannelName" placeholder="opus-amplify-notifications" />
+          <Field label="Channel name" name="teamsChannelName" placeholder="relay-notifications" />
           <Field label="Webhook URL (alternative)" name="teamsWebhookUrl" placeholder="https://..." />
         </Section>
 
@@ -136,7 +136,7 @@ export default async function NewInstancePage() {
           </Link>
           <button
             type="submit"
-            className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+            className="rounded-md bg-accent px-4 py-2 text-sm font-medium text-accent-foreground hover:bg-accent-hover"
           >
             Generate instance
           </button>

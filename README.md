@@ -1,4 +1,4 @@
-# Opus Amplify
+# Relay
 
 An employee advocacy portal for Opus Technologies. Marketing uploads posts
 in an admin panel — caption, any LinkedIn content type (single image, GIF,
@@ -267,6 +267,17 @@ from **My Profile** (linked in the nav once signed in), and admins can edit
 anyone's from **Admin → Team**. Either one marks the record as manually
 entered, which permanently stops auto-sync from overwriting it on a future
 login — a person's own correction always wins.
+
+## Branding
+
+The UI uses a minimal, mostly neutral (slate) palette with a single accent
+color for primary buttons, links, active nav states, and badges. Admins can
+change that accent color per deployment from **Admin → Branding** — pick any
+color (a native color picker, a hex field, or a few presets) and save; it
+applies immediately, for everyone, no redeploy needed. Readable hover and
+soft-background shades are derived from the one color automatically, and
+the text/foreground color used on top of it (black or white) is computed
+from its contrast automatically too, so there's nothing else to configure.
 
 ## Notifications
 

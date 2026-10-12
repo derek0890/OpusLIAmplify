@@ -64,7 +64,7 @@ export const exchangeChannel: NotificationChannel = {
         },
         body: JSON.stringify({
           message: {
-            subject: "New post published on Opus Amplify",
+            subject: "New post published on Relay",
             body: {
               contentType: "HTML",
               content: `<p>A new post is ready to amplify.</p><p>${escapeHtml(post.caption)}</p><p><a href="${post.feedUrl}">Amplify it</a> &middot; <a href="${post.postUrl}">View original</a></p>`,

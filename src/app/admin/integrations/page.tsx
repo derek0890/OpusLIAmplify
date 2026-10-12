@@ -117,7 +117,7 @@ export default async function IntegrationsPage({
               {teamsEnvConfigured ? (
                 <a
                   href="/api/integrations/teams/connect"
-                  className="mt-3 inline-block rounded-md border border-blue-300 px-3 py-1.5 text-xs font-medium text-blue-700 hover:bg-blue-50"
+                  className="mt-3 inline-block rounded-md border border-accent-strong px-3 py-1.5 text-xs font-medium text-accent-strong hover:bg-accent-soft"
                 >
                   Connect Microsoft Teams
                 </a>

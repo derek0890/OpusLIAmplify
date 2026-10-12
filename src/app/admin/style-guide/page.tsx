@@ -20,11 +20,11 @@ export default async function StyleGuidePage() {
           required
           rows={28}
           defaultValue={content}
-          className="w-full resize-y rounded-lg border border-slate-300 px-3 py-3 font-mono text-sm leading-relaxed outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+          className="w-full resize-y rounded-lg border border-slate-300 px-3 py-3 font-mono text-sm leading-relaxed outline-none focus:border-accent-strong focus:ring-1 focus:ring-accent-strong"
         />
         <button
           type="submit"
-          className="mt-4 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+          className="mt-4 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-accent-foreground hover:bg-accent-hover"
         >
           Save style guide
         </button>

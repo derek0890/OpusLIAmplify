@@ -31,7 +31,7 @@ export default async function SuperAdminPage() {
         </div>
         <Link
           href="/admin/super/new"
-          className="shrink-0 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+          className="shrink-0 rounded-md bg-accent px-4 py-2 text-sm font-medium text-accent-foreground hover:bg-accent-hover"
         >
           + New Instance
         </Link>
@@ -76,7 +76,7 @@ export default async function SuperAdminPage() {
               <div className="flex shrink-0 items-center gap-2">
                 <a
                   href={`/api/super/instances/${instance.id}/env`}
-                  className="rounded-md border border-blue-300 px-3 py-1.5 text-xs font-medium text-blue-700 hover:bg-blue-50"
+                  className="rounded-md border border-accent-strong px-3 py-1.5 text-xs font-medium text-accent-strong hover:bg-accent-soft"
                 >
                   Download .env
                 </a>

@@ -3,6 +3,7 @@
 import { signIn } from "next-auth/react";
 import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { APP_NAME } from "@/lib/brand";
 
 type Props = {
   ssoEnabled: boolean;
@@ -46,11 +47,11 @@ function LoginForm({ ssoEnabled, ssoProviderName, passwordEnabled }: Props) {
     <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4">
       <div className="w-full max-w-sm rounded-xl border border-slate-200 bg-white p-8 shadow-sm">
         <div className="mb-6 text-center">
-          <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-blue-600 text-lg font-bold text-white">
-            O
+          <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-accent text-lg font-bold text-accent-foreground">
+            R
           </div>
           <h1 className="text-xl font-semibold text-slate-900">
-            Opus Amplify
+            {APP_NAME}
           </h1>
           <p className="mt-1 text-sm text-slate-500">
             Employee advocacy portal
@@ -85,7 +86,7 @@ function LoginForm({ ssoEnabled, ssoProviderName, passwordEnabled }: Props) {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-accent-strong focus:ring-1 focus:ring-accent-strong"
                 placeholder="you@opustechnologies.com"
               />
             </div>
@@ -98,7 +99,7 @@ function LoginForm({ ssoEnabled, ssoProviderName, passwordEnabled }: Props) {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-accent-strong focus:ring-1 focus:ring-accent-strong"
                 placeholder="••••••••"
               />
             </div>
@@ -112,7 +113,7 @@ function LoginForm({ ssoEnabled, ssoProviderName, passwordEnabled }: Props) {
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white transition hover:bg-blue-700 disabled:opacity-60"
+              className="w-full rounded-lg bg-accent px-3 py-2 text-sm font-medium text-accent-foreground transition hover:bg-accent-hover disabled:opacity-60"
             >
               {loading ? "Signing in…" : "Sign in"}
             </button>

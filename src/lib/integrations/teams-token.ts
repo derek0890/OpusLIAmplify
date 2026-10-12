@@ -142,7 +142,7 @@ async function createChannel(accessToken: string, teamId: string, name: string):
     body: JSON.stringify({
       "@odata.type": "#Microsoft.Graph.channel",
       displayName: name,
-      description: "Posts published on Opus Amplify, ready to amplify.",
+      description: "Posts published on Relay, ready to amplify.",
       membershipType: "standard",
     }),
   });

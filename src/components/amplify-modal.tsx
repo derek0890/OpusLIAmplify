@@ -90,7 +90,7 @@ export function AmplifyModal({
           <button
             onClick={() => generate(type === "REPOST" ? "COMMENT" : "REPOST")}
             disabled={loading}
-            className="text-blue-600 hover:underline disabled:opacity-50"
+            className="text-accent-strong hover:underline disabled:opacity-50"
           >
             Switch to {type === "REPOST" ? "comment" : "repost"} instead
           </button>
@@ -100,7 +100,7 @@ export function AmplifyModal({
           href={postUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="mb-3 flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-blue-600 hover:bg-slate-100 hover:underline"
+          className="mb-3 flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-accent-strong hover:bg-slate-100 hover:underline"
         >
           View the original post on LinkedIn ↗
         </a>
@@ -123,7 +123,7 @@ export function AmplifyModal({
               value={content}
               onChange={(e) => setContent(e.target.value)}
               rows={type === "COMMENT" ? 3 : 6}
-              className="w-full resize-y rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+              className="w-full resize-y rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-accent-strong focus:ring-1 focus:ring-accent-strong"
             />
             <p className="mt-1 text-xs text-slate-400">
               Feel free to edit before you post — this is your unique copy,
@@ -133,7 +133,7 @@ export function AmplifyModal({
             <div className="mt-4 flex items-center gap-2">
               <button
                 onClick={copyToClipboard}
-                className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+                className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-accent-foreground hover:bg-accent-hover"
               >
                 {copied ? "Copied!" : "Copy to clipboard"}
               </button>

@@ -35,7 +35,7 @@ export default async function AdminPostsPage() {
         </div>
         <Link
           href="/admin/posts/new"
-          className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+          className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-accent-foreground hover:bg-accent-hover"
         >
           New post
         </Link>
