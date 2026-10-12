@@ -51,6 +51,7 @@ model User {
   accounts          Account[]
   sessions          Session[]
   teamsIntegrations TeamsIntegration[]
+  createdInstances  WhiteboxInstance[]
 }
 
 // Auth.js Prisma adapter contract (links an SSO identity to a User).
@@ -91,6 +92,49 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+// A generated configuration bundle for one client company's own whitebox
+// deployment (see /admin/super). This app itself stays single-tenant —
+// this just assembles and remembers the .env values for a SEPARATE
+// deployment of the same codebase, which an admin then stands up by hand
+// following the playbook. Secrets live here in plaintext like everywhere
+// else in this project's env-var-based config; the /admin/super pages are
+// restricted to SUPER_ADMIN_EMAIL precisely because of what this holds.
+model WhiteboxInstance {
+  id      String  @id @default(cuid())
+  name    String
+  logoUrl String?
+
+  slackBotToken    String?
+  slackChannelName String?
+  slackWebhookUrl  String?
+
+  teamsClientId     String?
+  teamsClientSecret String?
+  teamsTenantId     String?
+  teamsTeamId       String?
+  teamsChannelName  String?
+  teamsWebhookUrl   String?
+
+  exchangeTenantId         String?
+  exchangeClientId         String?
+  exchangeClientSecret     String?
+  exchangeSenderEmail      String?
+  exchangeNotifyRecipients String?
+
+  googleClientEmail               String?
+  googlePrivateKey                String?
+  googleWorkspaceSenderEmail      String?
+  googleWorkspaceNotifyRecipients String?
+
+  openaiApiKey        String?
+  openaiResearchModel String?
+  openaiCopyModel     String?
+
+  createdById String
+  createdBy   User     @relation(fields: [createdById], references: [id])
+  createdAt   DateTime @default(now())
 }
 
 // Holds the delegated OAuth tokens for the Teams notification channel's

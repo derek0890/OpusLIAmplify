@@ -11,8 +11,17 @@ const links = [
   { href: "/admin/integrations", label: "Integrations" },
 ];
 
-export function AdminNav({ userName }: { userName: string }) {
+export function AdminNav({
+  userName,
+  showSuperAdmin,
+}: {
+  userName: string;
+  showSuperAdmin?: boolean;
+}) {
   const pathname = usePathname();
+  const navLinks = showSuperAdmin
+    ? [...links, { href: "/admin/super", label: "Super Admin" }]
+    : links;
 
   return (
     <header className="border-b border-slate-200 bg-white">
@@ -25,7 +34,7 @@ export function AdminNav({ userName }: { userName: string }) {
             Opus Amplify Admin
           </span>
           <nav className="flex gap-1">
-            {links.map((link) => {
+            {navLinks.map((link) => {
               const active = pathname.startsWith(link.href);
               return (
                 <Link

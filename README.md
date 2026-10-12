@@ -149,6 +149,20 @@ so an employee generating copy can jump straight to the real post to paste
 it there — this is separate from, and always required regardless of, the
 optional "Links within the copy" field.
 
+## Provisioning new whitebox instances (Super Admin)
+
+Admin → **Super Admin** (visible only when signed in as the address set in
+`SUPER_ADMIN_EMAIL`, one operator account across all your internal/client
+deployments — see `.env.example`) generates a client's starting `.env` file:
+their name, logo, Slack/Teams/Exchange/Google Workspace notification
+credentials, and their own OpenAI key, all in one form. It doesn't deploy
+anything itself — this app stays single-tenant (see below) — it just
+assembles the config bundle for that company's own separate deployment.
+Full walkthrough, written for someone who's never done this before — what
+to collect, where each credential comes from, and how to actually deploy
+the result: the Whitebox Instance Playbook (ask whoever set this up for
+the link).
+
 ## Deploying for a company's SSO
 
 This app is built to be "whiteboxed" — handed to a company as its own
