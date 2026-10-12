@@ -423,6 +423,17 @@ whatever is saved there as the copywriter agent's instructions verbatim.
 
 ## Production notes
 
+- **Schema stays in sync automatically.** `npm run build` runs
+  `prisma db push` against whatever `DATABASE_URL` it's building with
+  before running `next build` (see `package.json`) — so every deploy
+  (this one, and any whitebox instance following this same process)
+  applies pending, additive schema changes on its own; you no longer need
+  to manually run `prisma db push` against production after a schema
+  change. If a future change is destructive (dropping/renaming a column,
+  etc.) rather than purely additive, `db push` will refuse and **fail the
+  build** rather than risk data loss silently — that's intentional; it
+  means a human has to consciously add `--accept-data-loss` for that one
+  deploy rather than it happening automatically in CI.
 - **Database:** Postgres by default (via `DATABASE_URL`) — this is required
   on any serverless host (Vercel, Render, etc.), since their filesystems
   are ephemeral and a SQLite file wouldn't persist. If you're running this
