@@ -81,6 +81,11 @@ if (ssoConfigured) {
 }
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
+  // Auth.js only auto-trusts the request host on Vercel; every other host
+  // (Replit, AWS, Azure, a self-hosted server, anything behind a proxy)
+  // needs this explicitly, or sign-in silently fails and bounces back to
+  // the login page with no visible error.
+  trustHost: true,
   adapter: PrismaAdapter(prisma),
   session: { strategy: "jwt" },
   pages: { signIn: "/login" },
