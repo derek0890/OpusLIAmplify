@@ -32,24 +32,25 @@ enum MediaType {
 }
 
 model User {
-  id             String   @id @default(cuid())
-  email          String   @unique
-  name           String
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String
   // Null for users provisioned via SSO, who never set a password.
-  passwordHash   String?
-  role           Role     @default(EMPLOYEE)
+  passwordHash  String?
+  role          Role      @default(EMPLOYEE)
   // Revokes access without losing the account/history, distinct from role.
-  isActive       Boolean  @default(true)
+  isActive      Boolean   @default(true)
   // Required by the Auth.js adapter contract; unused by our own OIDC flow
   // since we treat the IdP as the source of truth for verification.
-  emailVerified  DateTime?
-  createdAt      DateTime @default(now())
+  emailVerified DateTime?
+  createdAt     DateTime  @default(now())
 
-  posts          Post[]          @relation("PostAuthor")
-  amplifiedCopies AmplifiedCopy[]
-  styleGuideEdits StyleGuide[]
-  accounts        Account[]
-  sessions        Session[]
+  posts             Post[]             @relation("PostAuthor")
+  amplifiedCopies   AmplifiedCopy[]
+  styleGuideEdits   StyleGuide[]
+  accounts          Account[]
+  sessions          Session[]
+  teamsIntegrations TeamsIntegration[]
 }
 
 // Auth.js Prisma adapter contract (links an SSO identity to a User).
@@ -92,20 +93,36 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
+// Holds the delegated OAuth tokens for the Teams notification channel's
+// service account (see src/lib/integrations/teams-token.ts). Singleton —
+// at most one row ever exists. Posting a Teams channel message requires a
+// signed-in user's delegated permissions; Microsoft Graph has no app-only
+// permission for it outside data-migration scenarios.
+model TeamsIntegration {
+  id            String    @id @default(cuid())
+  refreshToken  String
+  accessToken   String?
+  expiresAt     DateTime?
+  channelId     String?
+  connectedById String
+  connectedBy   User      @relation(fields: [connectedById], references: [id])
+  updatedAt     DateTime  @updatedAt
+}
+
 model Post {
-  id                String     @id @default(cuid())
-  caption           String
-  postUrl           String
-  mediaType         MediaType  @default(NONE)
-  mediaJson         String     @default("[]")
-  linksJson         String     @default("[]")
-  contextLinksJson  String     @default("[]")
-  contextBrief      String?
-  status            PostStatus @default(DRAFT)
-  createdById       String
-  createdBy         User       @relation("PostAuthor", fields: [createdById], references: [id])
-  createdAt         DateTime   @default(now())
-  updatedAt         DateTime   @updatedAt
+  id               String     @id @default(cuid())
+  caption          String
+  postUrl          String
+  mediaType        MediaType  @default(NONE)
+  mediaJson        String     @default("[]")
+  linksJson        String     @default("[]")
+  contextLinksJson String     @default("[]")
+  contextBrief     String?
+  status           PostStatus @default(DRAFT)
+  createdById      String
+  createdBy        User       @relation("PostAuthor", fields: [createdById], references: [id])
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
 
   amplifiedCopies AmplifiedCopy[]
 }

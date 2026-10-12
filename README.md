@@ -229,11 +229,16 @@ Whenever an admin publishes a post — on creation with "Published" status, or
 by clicking **Publish** on an existing draft — the app fires a notification
 on every channel configured for *this* deployment's environment:
 
-- **Slack** — an Incoming Webhook (`SLACK_WEBHOOK_URL`).
-- **Microsoft Teams** — a Power Automate flow webhook (`TEAMS_WEBHOOK_URL`),
-  built from Microsoft's "Post to a channel when a webhook request is
-  received" template (the legacy Office 365 Connector webhooks are
-  retired).
+- **Slack** — either a bot token (`SLACK_BOT_TOKEN` + `SLACK_CHANNEL_NAME`),
+  which lets the app create that channel itself (reusing it if it already
+  exists) and post into it directly, or a simpler Incoming Webhook
+  (`SLACK_WEBHOOK_URL`) tied to a channel set up by hand.
+- **Microsoft Teams** — either a connected service account (see
+  "Connecting Microsoft Teams" below), which lets the app create the
+  channel and post real channel messages, or a simpler Power Automate flow
+  webhook (`TEAMS_WEBHOOK_URL`) built from Microsoft's "Post to a channel
+  when a webhook request is received" template and wired to a channel set
+  up by hand (the legacy Office 365 Connector webhooks are retired).
 - **Exchange / Outlook** — Microsoft Graph's `sendMail`, authenticated with
   an Entra app registration's client-credentials flow and the `Mail.Send`
   *application* permission (`EXCHANGE_TENANT_ID`, `EXCHANGE_CLIENT_ID`,
@@ -250,6 +255,37 @@ skipped. Channels run independently (`Promise.allSettled`): one failing
 post publish itself; failures are logged server-side. See
 `src/lib/notifications/` for the implementation and `.env.example` for the
 full list of variables each channel needs.
+
+### Connecting Microsoft Teams
+
+Creating a Teams channel works fine with an app-only (client-credentials)
+credential, but Microsoft Graph has no application permission for posting
+a normal channel message — only `Teamwork.Migrate.All`, meant for one-time
+data migration, and Microsoft's own terms call using Teams as a
+notification/log channel that way a violation. Posting a real message
+needs a signed-in user's delegated permissions, so this integration
+authenticates as a real service account instead of a bare app credential:
+
+1. Create (or pick) a dedicated Microsoft 365 account for this app to act
+   as, and add it as a member of the Team you want notifications posted
+   into — `Channel.Create` and `ChannelMessage.Send` both still require
+   team membership.
+2. Register an Entra app (client secret auth), add the delegated
+   permissions `Channel.Create` and `ChannelMessage.Send`, and get admin
+   consent. Add `${APP_URL}/api/integrations/teams/callback` as a
+   redirect URI.
+3. Set `TEAMS_CLIENT_ID`, `TEAMS_CLIENT_SECRET`, `TEAMS_TENANT_ID`,
+   `TEAMS_TEAM_ID` (the target team's id), and `TEAMS_CHANNEL_NAME`.
+4. Sign in to this app as an admin, go to **Admin → Integrations**, and
+   click **Connect Microsoft Teams** — sign in as the service account from
+   step 1 when Microsoft prompts.
+
+The app stores that account's refresh token (`TeamsIntegration` in the
+database) and uses it to mint fresh access tokens going forward,
+re-persisting the refresh token every time since Microsoft may rotate it
+on any given refresh. The notification channel it creates (or finds by
+name, if one already exists) is cached the same way, so it's created once
+and reused after that.
 
 ## Getting started
 
