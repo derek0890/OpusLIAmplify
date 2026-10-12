@@ -223,6 +223,34 @@ the account is deactivated or gone.
   `session.strategy` stays `"jwt"`, but is kept so switching to database
   sessions later doesn't need another migration.
 
+## Notifications
+
+Whenever an admin publishes a post — on creation with "Published" status, or
+by clicking **Publish** on an existing draft — the app fires a notification
+on every channel configured for *this* deployment's environment:
+
+- **Slack** — an Incoming Webhook (`SLACK_WEBHOOK_URL`).
+- **Microsoft Teams** — a Power Automate flow webhook (`TEAMS_WEBHOOK_URL`),
+  built from Microsoft's "Post to a channel when a webhook request is
+  received" template (the legacy Office 365 Connector webhooks are
+  retired).
+- **Exchange / Outlook** — Microsoft Graph's `sendMail`, authenticated with
+  an Entra app registration's client-credentials flow and the `Mail.Send`
+  *application* permission (`EXCHANGE_TENANT_ID`, `EXCHANGE_CLIENT_ID`,
+  `EXCHANGE_CLIENT_SECRET`, `EXCHANGE_SENDER_EMAIL`,
+  `EXCHANGE_NOTIFY_RECIPIENTS`).
+- **Google Workspace Email** — the Gmail API, authenticated with a service
+  account and domain-wide delegation (`GOOGLE_CLIENT_EMAIL`,
+  `GOOGLE_PRIVATE_KEY`, `GOOGLE_WORKSPACE_SENDER_EMAIL`,
+  `GOOGLE_WORKSPACE_NOTIFY_RECIPIENTS`).
+
+Each channel is entirely optional — leave its env vars unset and it's
+skipped. Channels run independently (`Promise.allSettled`): one failing
+(an expired webhook, a revoked credential) never blocks the others or the
+post publish itself; failures are logged server-side. See
+`src/lib/notifications/` for the implementation and `.env.example` for the
+full list of variables each channel needs.
+
 ## Getting started
 
 ```bash

@@ -40,6 +40,9 @@ model User {
   role           Role     @default(EMPLOYEE)
   // Revokes access without losing the account/history, distinct from role.
   isActive       Boolean  @default(true)
+  // Required by the Auth.js adapter contract; unused by our own OIDC flow
+  // since we treat the IdP as the source of truth for verification.
+  emailVerified  DateTime?
   createdAt      DateTime @default(now())
 
   posts          Post[]          @relation("PostAuthor")

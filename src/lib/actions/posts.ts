@@ -7,6 +7,7 @@ import path from "node:path";
 import crypto from "node:crypto";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { notifyNewPost } from "@/lib/notifications";
 import {
   type MediaItem,
   type MediaType,
@@ -181,7 +182,7 @@ export async function createPost(formData: FormData) {
     media = processed;
   }
 
-  await prisma.post.create({
+  const created = await prisma.post.create({
     data: {
       caption,
       postUrl,
@@ -194,8 +195,22 @@ export async function createPost(formData: FormData) {
     },
   });
 
+  if (created.status === "PUBLISHED") {
+    await notifyNewPost(notificationPayload(created));
+  }
+
   revalidatePath("/admin/posts");
   redirect("/admin/posts");
+}
+
+function notificationPayload(post: { id: string; caption: string; postUrl: string }) {
+  const base = (process.env.APP_URL ?? "http://localhost:3000").replace(/\/$/, "");
+  return {
+    id: post.id,
+    caption: post.caption,
+    postUrl: post.postUrl,
+    feedUrl: `${base}/feed`,
+  };
 }
 
 export async function updatePost(postId: string, formData: FormData) {
@@ -290,7 +305,18 @@ export async function setPostStatus(
   status: "DRAFT" | "PUBLISHED" | "ARCHIVED",
 ) {
   await requireAdmin();
+
+  const existing = await prisma.post.findUnique({ where: { id: postId } });
+  if (!existing) {
+    throw new Error("Post not found.");
+  }
+
   await prisma.post.update({ where: { id: postId }, data: { status } });
+
+  if (status === "PUBLISHED" && existing.status !== "PUBLISHED") {
+    await notifyNewPost(notificationPayload(existing));
+  }
+
   revalidatePath("/admin/posts");
   revalidatePath("/feed");
 }

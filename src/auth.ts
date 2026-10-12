@@ -57,6 +57,10 @@ if (ssoConfigured) {
     issuer: process.env.SSO_ISSUER,
     clientId: process.env.SSO_CLIENT_ID,
     clientSecret: process.env.SSO_CLIENT_SECRET,
+    // Some IdPs only put `sub` in the ID token and keep email/name on the
+    // userinfo endpoint (OIDC core §5.4 allows this). Fetch userinfo rather
+    // than trusting the ID token alone so we work against both kinds.
+    idToken: false,
     // Runs only when no existing Account link is found, i.e. first-ever
     // sign-in for this person — later logins reuse the stored User row
     // untouched, so role/active-status changes made in Admin → Team stick.
