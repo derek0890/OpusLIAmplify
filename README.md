@@ -235,6 +235,11 @@ person. This is the normal way to add someone who should only have the
 `EDITOR` role — anyone with the full `ADMIN` role could otherwise grant
 themselves or others more access than intended.
 
+Name, Email, Job title, and Department fields on this page autocomplete
+from users and designations this deployment has already captured (via SSO
+sign-in or prior manual entry) — plain HTML `<datalist>`s, so a fresh
+deployment with no users yet behaves exactly like ordinary text inputs.
+
 Role and active-status changes take effect on the user's **next request**,
 not next login: `src/auth.ts`'s `jwt` callback re-reads the user's current
 role/`isActive` from the database on every request rather than trusting

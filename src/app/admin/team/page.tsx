@@ -21,6 +21,15 @@ export default async function TeamPage() {
 
   const activeAdminCount = users.filter((u) => u.role === "ADMIN" && u.isActive).length;
 
+  // Autofill suggestions sourced from users and designations this deployment
+  // has actually captured (via SSO sign-in or manual entry) — not hardcoded.
+  // An empty deployment just means empty <datalist>s, i.e. plain free-text
+  // inputs with no change in behavior.
+  const knownNames = [...new Set(users.map((u) => u.name).filter(Boolean))];
+  const knownEmails = [...new Set(users.map((u) => u.email).filter(Boolean))];
+  const knownJobTitles = [...new Set(users.map((u) => u.jobTitle).filter((v): v is string => !!v))];
+  const knownDepartments = [...new Set(users.map((u) => u.department).filter((v): v is string => !!v))];
+
   return (
     <div>
       <div className="mb-6">
@@ -32,6 +41,30 @@ export default async function TeamPage() {
           posts and use the feed, but nothing else in Admin.
         </p>
       </div>
+
+      {/* Autocomplete sources for admin/super-admin-filled fields below —
+          populated from existing users and their captured designations.
+          Empty when none exist yet, which is a no-op for the inputs. */}
+      <datalist id="known-names">
+        {knownNames.map((name) => (
+          <option key={name} value={name} />
+        ))}
+      </datalist>
+      <datalist id="known-emails">
+        {knownEmails.map((email) => (
+          <option key={email} value={email} />
+        ))}
+      </datalist>
+      <datalist id="known-job-titles">
+        {knownJobTitles.map((title) => (
+          <option key={title} value={title} />
+        ))}
+      </datalist>
+      <datalist id="known-departments">
+        {knownDepartments.map((dept) => (
+          <option key={dept} value={dept} />
+        ))}
+      </datalist>
 
       {canCreateAccounts && (
         <div className="mb-6 rounded-xl border border-slate-200 bg-white p-5">
@@ -48,6 +81,7 @@ export default async function TeamPage() {
                 type="text"
                 name="name"
                 required
+                list="known-names"
                 className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-accent-strong focus:outline-none"
               />
             </label>
@@ -57,6 +91,8 @@ export default async function TeamPage() {
                 type="email"
                 name="email"
                 required
+                list="known-emails"
+                title="Suggestions are existing accounts — picking one will fail, since this form is for new accounts only. Use the role dropdown below the table to change an existing person's role instead."
                 className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-accent-strong focus:outline-none"
               />
             </label>
@@ -186,6 +222,7 @@ export default async function TeamPage() {
                         name="jobTitle"
                         defaultValue={user.jobTitle ?? ""}
                         placeholder="Job title"
+                        list="known-job-titles"
                         className="w-32 rounded border border-slate-200 px-2 py-1 text-xs focus:border-accent-strong focus:outline-none"
                       />
                       <input
@@ -193,6 +230,7 @@ export default async function TeamPage() {
                         name="department"
                         defaultValue={user.department ?? ""}
                         placeholder="Department"
+                        list="known-departments"
                         className="w-32 rounded border border-slate-200 px-2 py-1 text-xs focus:border-accent-strong focus:outline-none"
                       />
                       <button className="self-start text-xs font-medium text-accent-strong hover:underline">
