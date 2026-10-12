@@ -1,1 +1,0 @@
-{"version":3,"file":"roleWritingInstruction.d.ts","sourceRoot":"","sources":["../../../src/generated/types/roleWritingInstruction.ts"],"names":[],"mappings":"AAAA;;;;;;GAMG;AACH,OAAO,KAAK,EAAE,0BAA0B,EAAE,MAAM,8BAA8B,CAAC;AAE/E,MAAM,WAAW,sBAAsB;IACrC,IAAI,EAAE,0BAA0B,CAAC;IACjC,KAAK,EAAE,MAAM,CAAC;IACd,OAAO,EAAE,MAAM,CAAC;IAChB,SAAS,EAAE,IAAI,CAAC;CACjB"}
