@@ -1,12 +1,10 @@
-import crypto from "node:crypto";
 import { type NotificationChannel, type PostNotificationPayload } from "./types";
+import { getGoogleServiceAccountToken } from "@/lib/google-service-account";
 
 // Gmail API via a service account with domain-wide delegation.
 // https://developers.google.com/workspace/gmail/api/guides/sending
 // The service account impersonates a real Workspace mailbox (the `sub`
-// claim) to call users.messages.send with the gmail.send scope. We sign the
-// JWT ourselves with node:crypto so this doesn't need the googleapis SDK.
-const TOKEN_URL = "https://oauth2.googleapis.com/token";
+// claim) to call users.messages.send with the gmail.send scope.
 const SCOPE = "https://www.googleapis.com/auth/gmail.send";
 
 function base64url(input: Buffer | string): string {
@@ -25,42 +23,7 @@ function recipients(): string[] {
 }
 
 async function getAccessToken(): Promise<string> {
-  const clientEmail = process.env.GOOGLE_CLIENT_EMAIL!;
-  const privateKey = process.env.GOOGLE_PRIVATE_KEY!.replace(/\\n/g, "\n");
-  const impersonatedUser = process.env.GOOGLE_WORKSPACE_SENDER_EMAIL!;
-
-  const now = Math.floor(Date.now() / 1000);
-  const header = base64url(JSON.stringify({ alg: "RS256", typ: "JWT" }));
-  const claims = base64url(
-    JSON.stringify({
-      iss: clientEmail,
-      sub: impersonatedUser,
-      scope: SCOPE,
-      aud: TOKEN_URL,
-      iat: now,
-      exp: now + 3600,
-    }),
-  );
-  const signingInput = `${header}.${claims}`;
-  const signature = base64url(
-    crypto.createSign("RSA-SHA256").update(signingInput).sign(privateKey),
-  );
-  const assertion = `${signingInput}.${signature}`;
-
-  const res = await fetch(TOKEN_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: new URLSearchParams({
-      grant_type: "urn:ietf:params:oauth:grant-type:jwt-bearer",
-      assertion,
-    }),
-  });
-
-  if (!res.ok) {
-    throw new Error(`Failed to get Gmail API token: ${res.status} ${await res.text()}`);
-  }
-  const data = (await res.json()) as { access_token: string };
-  return data.access_token;
+  return getGoogleServiceAccountToken(SCOPE, process.env.GOOGLE_WORKSPACE_SENDER_EMAIL!);
 }
 
 function buildRawMessage(from: string, to: string[], subject: string, html: string): string {

@@ -1,6 +1,6 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { setUserRole, setUserActive } from "@/lib/actions/users";
+import { setUserRole, setUserActive, setUserProfile } from "@/lib/actions/users";
 
 export default async function TeamPage() {
   const session = await auth();
@@ -31,6 +31,7 @@ export default async function TeamPage() {
               <th className="px-4 py-3">Signed in via</th>
               <th className="px-4 py-3">Role</th>
               <th className="px-4 py-3">Status</th>
+              <th className="px-4 py-3">Designation</th>
               <th className="px-4 py-3 text-right">Actions</th>
             </tr>
           </thead>
@@ -77,6 +78,33 @@ export default async function TeamPage() {
                     >
                       {user.isActive ? "Active" : "Deactivated"}
                     </span>
+                  </td>
+                  <td className="px-4 py-3">
+                    <form
+                      action={async (formData) => {
+                        "use server";
+                        await setUserProfile(user.id, formData);
+                      }}
+                      className="flex flex-col gap-1"
+                    >
+                      <input
+                        type="text"
+                        name="jobTitle"
+                        defaultValue={user.jobTitle ?? ""}
+                        placeholder="Job title"
+                        className="w-32 rounded border border-slate-200 px-2 py-1 text-xs focus:border-blue-500 focus:outline-none"
+                      />
+                      <input
+                        type="text"
+                        name="department"
+                        defaultValue={user.department ?? ""}
+                        placeholder="Department"
+                        className="w-32 rounded border border-slate-200 px-2 py-1 text-xs focus:border-blue-500 focus:outline-none"
+                      />
+                      <button className="self-start text-xs font-medium text-blue-600 hover:underline">
+                        Save
+                      </button>
+                    </form>
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-end gap-2">

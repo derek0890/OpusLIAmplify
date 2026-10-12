@@ -5,6 +5,7 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import type { Provider } from "@auth/core/providers";
 import type { Profile } from "@auth/core/types";
 import { prisma } from "@/lib/prisma";
+import { enrichEmployeeProfile } from "@/lib/profile-enrichment";
 
 const INITIAL_ADMIN_EMAILS = (process.env.INITIAL_ADMIN_EMAILS ?? "")
   .split(",")
@@ -57,6 +58,15 @@ if (ssoConfigured) {
     issuer: process.env.SSO_ISSUER,
     clientId: process.env.SSO_CLIENT_ID,
     clientSecret: process.env.SSO_CLIENT_SECRET,
+    // User.Read lets us pull jobTitle/department from Microsoft Graph after
+    // sign-in (see src/lib/profile-enrichment.ts) — harmless to request on
+    // any other IdP since unrecognized scopes are typically just ignored,
+    // but only actually used when the issuer is Microsoft's.
+    authorization: {
+      params: {
+        scope: `openid profile email${process.env.SSO_ISSUER?.includes("microsoftonline.com") ? " User.Read" : ""}`,
+      },
+    },
     // Some IdPs only put `sub` in the ID token and keep email/name on the
     // userinfo endpoint (OIDC core §5.4 allows this). Fetch userinfo rather
     // than trusting the ID token alone so we work against both kinds.
@@ -114,6 +124,18 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         session.user.role = token.role as "ADMIN" | "EMPLOYEE";
       }
       return session;
+    },
+  },
+  events: {
+    // Fire-and-forget: runs on every SSO sign-in (not just the first), never
+    // blocks or can fail the login itself. See src/lib/profile-enrichment.ts.
+    signIn: async ({ user, account }) => {
+      if (account?.provider !== "sso" || !user.id || !user.email) return;
+      void enrichEmployeeProfile({
+        userId: user.id,
+        email: user.email,
+        accessToken: account.access_token,
+      });
     },
   },
 });

@@ -27,6 +27,9 @@ export function FeedNav({
               Admin
             </a>
           )}
+          <a href="/profile" className="text-sm font-medium text-blue-600 hover:underline">
+            My Profile
+          </a>
           <span className="text-sm text-slate-500">{userName}</span>
           <button
             onClick={() => signOut({ callbackUrl: "/login" })}

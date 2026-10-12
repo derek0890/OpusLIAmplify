@@ -45,6 +45,15 @@ model User {
   emailVerified DateTime?
   createdAt     DateTime  @default(now())
 
+  // Used to tailor AI-generated copy to who's writing it. Auto-filled on
+  // sign-in from the company's identity provider where supported (see
+  // src/lib/profile-enrichment.ts), with a manual fallback — profileSource
+  // "manual" means a person edited it, so auto-sync leaves it alone.
+  jobTitle         String?
+  department       String?
+  profileSource    String?
+  profileUpdatedAt DateTime?
+
   posts             Post[]             @relation("PostAuthor")
   amplifiedCopies   AmplifiedCopy[]
   styleGuideEdits   StyleGuide[]

@@ -53,6 +53,9 @@ export function AdminNav({
           </nav>
         </div>
         <div className="flex items-center gap-3">
+          <Link href="/profile" className="text-sm font-medium text-blue-600 hover:underline">
+            My Profile
+          </Link>
           <span className="text-sm text-slate-500">{userName}</span>
           <button
             onClick={() => signOut({ callbackUrl: "/login" })}

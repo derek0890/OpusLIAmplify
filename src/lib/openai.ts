@@ -77,6 +77,7 @@ export async function generateAmplifiedCopy({
   contextBrief,
   type,
   recentExamples,
+  employeeProfile,
 }: {
   writingInstructions: string;
   postCaption: string;
@@ -84,6 +85,7 @@ export async function generateAmplifiedCopy({
   contextBrief: string;
   type: CopyType;
   recentExamples: string[];
+  employeeProfile?: { jobTitle?: string | null; department?: string | null };
 }): Promise<string> {
   const instructions = [
     "You write LinkedIn repost captions and comments for employees at Opus Technologies who are amplifying",
@@ -126,6 +128,15 @@ export async function generateAmplifiedCopy({
         ].join("\n")
       : "";
 
+  const profileParts = [employeeProfile?.jobTitle, employeeProfile?.department].filter(Boolean);
+  const profileBlock =
+    profileParts.length > 0
+      ? `The employee writing this is a ${profileParts.join(" in ")}. Let the perspective and ` +
+        "emphasis feel natural for someone in that role (e.g. an engineer might lean technical, " +
+        "someone in sales might emphasize customer impact) — never state their job title or " +
+        "department explicitly in the copy itself."
+      : "";
+
   const userInput = [
     kindInstruction,
     "",
@@ -133,6 +144,7 @@ export async function generateAmplifiedCopy({
     linksBlock,
     contextBlock,
     avoidBlock,
+    profileBlock,
     "",
     `Variation seed (ignore the value itself, just ensure this generation is fresh): ${crypto.randomUUID()}`,
   ]

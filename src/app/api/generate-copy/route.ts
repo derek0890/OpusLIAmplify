@@ -34,6 +34,11 @@ export async function POST(req: NextRequest) {
     select: { content: true },
   });
 
+  const employee = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { jobTitle: true, department: true },
+  });
+
   try {
     const publicLinks: string[] = JSON.parse(post.linksJson || "[]");
     const contextLinks: string[] = JSON.parse(post.contextLinksJson || "[]");
@@ -59,6 +64,7 @@ export async function POST(req: NextRequest) {
       contextBrief,
       type,
       recentExamples: recent.map((r) => r.content),
+      employeeProfile: employee ?? undefined,
     });
 
     const saved = await prisma.amplifiedCopy.create({

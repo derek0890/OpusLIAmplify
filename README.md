@@ -238,6 +238,36 @@ the account is deactivated or gone.
   `session.strategy` stays `"jwt"`, but is kept so switching to database
   sessions later doesn't need another migration.
 
+## Employee designations
+
+Each employee's job title and department are used to nudge the AI copy
+toward sounding natural for their role — an engineer's repost reads a
+little differently than a salesperson's, without either ever stating their
+title outright (that instruction lives in `generateAmplifiedCopy` in
+`src/lib/openai.ts`). The style guide stays the single shared source of
+truth; this only adjusts tone and emphasis on top of it.
+
+**Auto-fetch on sign-in** (best-effort, never blocks login — see
+`src/lib/profile-enrichment.ts`):
+- **Microsoft (Entra ID):** works automatically once SSO is connected — the
+  app requests the extra `User.Read` scope and reads `jobTitle`/`department`
+  from Microsoft Graph's `/me` endpoint using that login's own access token.
+- **Google Workspace:** needs one extra step beyond SSO, since job title
+  isn't part of a normal login response — it only lives in the Admin SDK
+  Directory API, which needs a Workspace admin's domain-wide delegation (the
+  same service account already used for Google Workspace notifications, see
+  above, plus the `admin.directory.user.readonly` scope and
+  `GOOGLE_DIRECTORY_ADMIN_EMAIL` env var).
+- **Any other IdP:** not auto-fetched — support varies entirely by how that
+  company's admin configured their directory, so this always falls back to
+  manual entry.
+
+**Manual fallback:** every employee can set their own job title/department
+from **My Profile** (linked in the nav once signed in), and admins can edit
+anyone's from **Admin → Team**. Either one marks the record as manually
+entered, which permanently stops auto-sync from overwriting it on a future
+login — a person's own correction always wins.
+
 ## Notifications
 
 Whenever an admin publishes a post — on creation with "Published" status, or
