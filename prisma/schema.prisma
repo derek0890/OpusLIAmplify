@@ -9,6 +9,10 @@ datasource db {
 
 enum Role {
   ADMIN
+  // Can create/edit/publish posts and use the feed, nothing else (no Team,
+  // Style Guide, Integrations, Branding, or Super Admin access). Only a
+  // super admin can create or promote someone into this role.
+  EDITOR
   EMPLOYEE
 }
 
@@ -187,6 +191,7 @@ model Post {
 model BrandingSettings {
   id          String   @id @default(cuid())
   accentColor String   @default("#4f46e5")
+  fontFamily  String   @default("geist")
   updatedById String
   updatedBy   User     @relation(fields: [updatedById], references: [id])
   updatedAt   DateTime @updatedAt

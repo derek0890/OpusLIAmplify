@@ -20,7 +20,10 @@ export default async function ProfilePage() {
   });
   if (!user) redirect("/login");
 
-  const backHref = session.user.role === "ADMIN" ? "/admin/posts" : "/feed";
+  const backHref =
+    session.user.role === "ADMIN" || session.user.role === "EDITOR"
+      ? "/admin/posts"
+      : "/feed";
 
   return (
     <div className="min-h-screen bg-slate-100">

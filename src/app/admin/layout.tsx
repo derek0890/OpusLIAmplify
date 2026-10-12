@@ -9,7 +9,10 @@ export default async function AdminLayout({
   children: React.ReactNode;
 }) {
   const session = await auth();
-  if (!session?.user || session.user.role !== "ADMIN") {
+  if (
+    !session?.user ||
+    (session.user.role !== "ADMIN" && session.user.role !== "EDITOR")
+  ) {
     redirect("/login");
   }
 
@@ -17,6 +20,7 @@ export default async function AdminLayout({
     <div className="min-h-screen bg-slate-50">
       <AdminNav
         userName={session.user.name ?? session.user.email ?? ""}
+        role={session.user.role}
         showSuperAdmin={isSuperAdmin(session.user.email)}
       />
       <main className="mx-auto max-w-5xl px-4 py-8">{children}</main>

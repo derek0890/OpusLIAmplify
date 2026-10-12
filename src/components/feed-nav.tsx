@@ -5,10 +5,10 @@ import { APP_NAME } from "@/lib/brand";
 
 export function FeedNav({
   userName,
-  isAdmin,
+  canAccessAdmin,
 }: {
   userName: string;
-  isAdmin: boolean;
+  canAccessAdmin: boolean;
 }) {
   return (
     <header className="sticky top-0 z-10 border-b border-slate-200 bg-white/95 backdrop-blur">
@@ -20,7 +20,7 @@ export function FeedNav({
           {APP_NAME}
         </span>
         <div className="flex items-center gap-3">
-          {isAdmin && (
+          {canAccessAdmin && (
             <a
               href="/admin"
               className="text-sm font-medium text-accent-strong hover:underline"

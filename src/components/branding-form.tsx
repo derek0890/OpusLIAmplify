@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { updateBrandingAccent } from "@/lib/actions/branding";
+import { updateBranding } from "@/lib/actions/branding";
 import { contrastForeground, isValidHexColor } from "@/lib/color";
+import { FONT_OPTIONS, fontCssVar } from "@/lib/brand";
 
 const PRESETS = [
   { label: "Indigo", value: "#4f46e5" },
@@ -13,8 +14,15 @@ const PRESETS = [
   { label: "Graphite", value: "#111827" },
 ];
 
-export function BrandingForm({ initialColor }: { initialColor: string }) {
+export function BrandingForm({
+  initialColor,
+  initialFont,
+}: {
+  initialColor: string;
+  initialFont: string;
+}) {
   const [color, setColor] = useState(initialColor);
+  const [font, setFont] = useState(initialFont);
   const [error, setError] = useState<string | null>(null);
 
   const valid = isValidHexColor(color);
@@ -26,7 +34,7 @@ export function BrandingForm({ initialColor }: { initialColor: string }) {
       return;
     }
     setError(null);
-    return updateBrandingAccent(formData);
+    return updateBranding(formData);
   }
 
   return (
@@ -80,9 +88,33 @@ export function BrandingForm({ initialColor }: { initialColor: string }) {
         </div>
       </div>
 
+      <div>
+        <label className="mb-1.5 block text-sm font-medium text-slate-700">
+          Font
+        </label>
+        <p className="mb-3 text-sm text-slate-500">
+          Applies to every page immediately for everyone on this deployment.
+        </p>
+        <select
+          name="fontFamily"
+          value={font}
+          onChange={(e) => setFont(e.target.value)}
+          className="w-56 rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-accent-strong focus:ring-1 focus:ring-accent-strong"
+        >
+          {FONT_OPTIONS.map((opt) => (
+            <option key={opt.key} value={opt.key}>
+              {opt.label}
+            </option>
+          ))}
+        </select>
+      </div>
+
       <div
         className="rounded-xl border border-slate-200 bg-slate-50 p-5"
-        style={valid ? ({ "--accent": color } as React.CSSProperties) : undefined}
+        style={{
+          ...(valid ? ({ "--accent": color } as React.CSSProperties) : {}),
+          fontFamily: fontCssVar(font),
+        }}
       >
         <p className="mb-3 text-xs font-medium uppercase tracking-wide text-slate-400">
           Live preview
@@ -102,13 +134,16 @@ export function BrandingForm({ initialColor }: { initialColor: string }) {
             A link
           </a>
         </div>
+        <p className="mt-3 text-sm text-slate-700">
+          The quick brown fox jumps over the lazy dog.
+        </p>
       </div>
 
       <button
         type="submit"
         className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-accent-foreground hover:bg-accent-hover"
       >
-        Save accent color
+        Save branding
       </button>
     </form>
   );

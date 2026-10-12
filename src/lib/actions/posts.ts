@@ -32,9 +32,12 @@ const EXT_BY_MIME: Record<string, string> = {
   "application/pdf": "pdf",
 };
 
-async function requireAdmin() {
+async function requirePostAccess() {
   const session = await auth();
-  if (!session?.user || session.user.role !== "ADMIN") {
+  if (
+    !session?.user ||
+    (session.user.role !== "ADMIN" && session.user.role !== "EDITOR")
+  ) {
     redirect("/login");
   }
   return session;
@@ -148,7 +151,7 @@ function parseMediaType(raw: FormDataEntryValue | null): MediaType {
 }
 
 export async function createPost(formData: FormData) {
-  const session = await requireAdmin();
+  const session = await requirePostAccess();
 
   const caption = String(formData.get("caption") ?? "").trim();
   const postUrl = parsePostUrl(formData.get("postUrl"));
@@ -214,7 +217,7 @@ function notificationPayload(post: { id: string; caption: string; postUrl: strin
 }
 
 export async function updatePost(postId: string, formData: FormData) {
-  await requireAdmin();
+  await requirePostAccess();
 
   const existing = await prisma.post.findUnique({ where: { id: postId } });
   if (!existing) {
@@ -294,7 +297,7 @@ export async function updatePost(postId: string, formData: FormData) {
 }
 
 export async function deletePost(postId: string) {
-  await requireAdmin();
+  await requirePostAccess();
   await prisma.amplifiedCopy.deleteMany({ where: { postId } });
   await prisma.post.delete({ where: { id: postId } });
   revalidatePath("/admin/posts");
@@ -304,7 +307,7 @@ export async function setPostStatus(
   postId: string,
   status: "DRAFT" | "PUBLISHED" | "ARCHIVED",
 ) {
-  await requireAdmin();
+  await requirePostAccess();
 
   const existing = await prisma.post.findUnique({ where: { id: postId } });
   if (!existing) {

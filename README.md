@@ -31,8 +31,9 @@ LinkedIn's Marketing Developer Platform for Community Management API access
 - **Prisma + Postgres** for data (SQLite also supported for single-server
   deployments — see Production notes below)
 - **Auth.js / NextAuth v5** with email/password and an optional enterprise
-  SSO (OIDC) provider, and two roles: `ADMIN` (marketing) and `EMPLOYEE` —
-  see "Deploying for a company's SSO" below
+  SSO (OIDC) provider, and three roles: `ADMIN` (marketing, full access),
+  `EDITOR` (can create/publish posts and use the feed, nothing else in
+  Admin), and `EMPLOYEE` — see "Deploying for a company's SSO" below
 - **OpenAI API** (`openai` SDK, Responses API) — two agents, each on a model
   picked for its job (see below)
 
@@ -62,7 +63,7 @@ env vars — see the note on model naming under Production notes below.
 
 ### Data model (`prisma/schema.prisma`)
 
-- `User` — email/password login, `ADMIN` or `EMPLOYEE` role
+- `User` — email/password login, `ADMIN`, `EDITOR`, or `EMPLOYEE` role
 - `Post` — caption, required `postUrl` (the original LinkedIn post),
   media type + uploaded files (`mediaType`/`mediaJson`), public links shown
   in the feed (`linksJson`), admin-only reference links crawled for AI
@@ -208,19 +209,31 @@ instead (useful for the people setting the deployment up), list their
 emails in `INITIAL_ADMIN_EMAILS` (comma-separated) before they sign in —
 after that, admin status is managed from the app itself (next section).
 
-### Adding and removing admins
+### Adding and removing admins, editors, and accounts
 
 **Admin → Team** (`/admin/team`) lists everyone who has ever signed in,
-whether via SSO or password, and lets an admin:
+whether via SSO or password, plus anyone the super admin created directly,
+and lets an admin:
 
-- **Make admin / Remove admin** — toggles the `ADMIN` ↔ `EMPLOYEE` role.
+- **Change role** — a dropdown between `ADMIN`, `EDITOR`, and `EMPLOYEE`.
+  `EDITOR` can create/edit/publish posts and use the feed, but can't reach
+  Team, Style Guide, Integrations, Branding, or Super Admin — enforced at
+  the edge in `src/proxy.ts`, not just hidden in the nav.
 - **Deactivate / Reactivate** — revokes or restores login access entirely,
   without deleting the account or their post/copy history.
 
-Both actions are blocked from leaving the deployment with zero active
-admins (the button disables itself on the last one), and nobody can
-deactivate their own account — both enforced server-side in
-`src/lib/actions/users.ts`, not just hidden in the UI.
+Demoting the deployment's last active admin (to `EDITOR` or `EMPLOYEE`) or
+deactivating them is blocked server-side, and nobody can deactivate their
+own account — both enforced in `src/lib/actions/users.ts`, not just hidden
+in the UI.
+
+**Creating a new account directly** (rather than waiting for someone to
+sign in via SSO) is Super Admin-only — there's no invite-email flow, so the
+**Create an account** form on the Team page (visible only to the super
+admin) sets an initial password the super admin then relays to that
+person. This is the normal way to add someone who should only have the
+`EDITOR` role — anyone with the full `ADMIN` role could otherwise grant
+themselves or others more access than intended.
 
 Role and active-status changes take effect on the user's **next request**,
 not next login: `src/auth.ts`'s `jwt` callback re-reads the user's current
@@ -271,13 +284,16 @@ login — a person's own correction always wins.
 ## Branding
 
 The UI uses a minimal, mostly neutral (slate) palette with a single accent
-color for primary buttons, links, active nav states, and badges. Admins can
-change that accent color per deployment from **Admin → Branding** — pick any
-color (a native color picker, a hex field, or a few presets) and save; it
-applies immediately, for everyone, no redeploy needed. Readable hover and
-soft-background shades are derived from the one color automatically, and
-the text/foreground color used on top of it (black or white) is computed
-from its contrast automatically too, so there's nothing else to configure.
+color for primary buttons, links, active nav states, and badges, plus one
+font applied everywhere. **Only the super admin** can change either, from
+**Admin → Branding** (`/admin/branding` — not shown in the nav, and
+redirects away, for a regular admin): pick an accent color (a native color
+picker, a hex field, or a few presets) and a font from a curated list
+(Geist, Inter, Manrope, Space Grotesk), then save — it applies immediately,
+for everyone, no redeploy needed. Readable hover/soft shades and the
+text/foreground color used on top of the accent (black or white) are
+computed automatically from the one color, so there's nothing else to
+configure.
 
 ## Notifications
 

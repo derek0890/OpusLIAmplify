@@ -12,8 +12,13 @@ export default auth((req) => {
       url.searchParams.set("callbackUrl", pathname);
       return NextResponse.redirect(url);
     }
-    if (role !== "ADMIN") {
-      return NextResponse.redirect(new URL("/feed", req.nextUrl.origin));
+    // Editors are scoped to Posts only — everything else under /admin
+    // (Team, Style Guide, Integrations, Branding, Super Admin) is ADMIN-only.
+    const isPostsPath = pathname === "/admin" || pathname.startsWith("/admin/posts");
+    const allowed = role === "ADMIN" || (role === "EDITOR" && isPostsPath);
+    if (!allowed) {
+      const fallback = role === "EDITOR" ? "/admin/posts" : "/feed";
+      return NextResponse.redirect(new URL(fallback, req.nextUrl.origin));
     }
   }
 

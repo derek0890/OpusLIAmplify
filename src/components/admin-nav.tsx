@@ -5,25 +5,33 @@ import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { APP_NAME } from "@/lib/brand";
 
-const links = [
-  { href: "/admin/posts", label: "Posts" },
+const POSTS_LINK = { href: "/admin/posts", label: "Posts" };
+const ADMIN_ONLY_LINKS = [
   { href: "/admin/style-guide", label: "Style Guide" },
   { href: "/admin/team", label: "Team" },
   { href: "/admin/integrations", label: "Integrations" },
-  { href: "/admin/branding", label: "Branding" },
 ];
 
 export function AdminNav({
   userName,
+  role,
   showSuperAdmin,
 }: {
   userName: string;
+  role: "ADMIN" | "EDITOR";
   showSuperAdmin?: boolean;
 }) {
   const pathname = usePathname();
-  const navLinks = showSuperAdmin
-    ? [...links, { href: "/admin/super", label: "Super Admin" }]
-    : links;
+  const navLinks = [
+    POSTS_LINK,
+    ...(role === "ADMIN" ? ADMIN_ONLY_LINKS : []),
+    ...(showSuperAdmin
+      ? [
+          { href: "/admin/branding", label: "Branding" },
+          { href: "/admin/super", label: "Super Admin" },
+        ]
+      : []),
+  ];
 
   return (
     <header className="border-b border-slate-200 bg-white">

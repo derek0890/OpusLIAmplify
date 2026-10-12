@@ -16,7 +16,7 @@ export default async function FeedLayout({
     <div className="min-h-screen bg-slate-100">
       <FeedNav
         userName={session.user.name ?? session.user.email ?? ""}
-        isAdmin={session.user.role === "ADMIN"}
+        canAccessAdmin={session.user.role === "ADMIN" || session.user.role === "EDITOR"}
       />
       <main className="mx-auto max-w-xl px-4 py-6">{children}</main>
     </div>
