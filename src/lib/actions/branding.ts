@@ -6,17 +6,28 @@ import { requireSuperAdmin } from "@/lib/super-admin";
 import { DEFAULT_ACCENT_COLOR, DEFAULT_FONT_KEY, FONT_OPTIONS } from "@/lib/brand";
 import { isValidHexColor } from "@/lib/color";
 
+// Called from the root layout on every single page render (including
+// Next.js's static prerendering of pages like /login during `next build`
+// itself), so the whole site — and the build — would go down on any DB
+// hiccup, or on a deployment that hasn't run `prisma db push` yet to add
+// this table. Fall back to defaults instead of throwing; this is the one
+// query in the app that genuinely can't be allowed to fail the page.
 export async function getBrandingSettings(): Promise<{
   accentColor: string;
   fontFamily: string;
 }> {
-  const settings = await prisma.brandingSettings.findFirst({
-    orderBy: { updatedAt: "desc" },
-  });
-  return {
-    accentColor: settings?.accentColor ?? DEFAULT_ACCENT_COLOR,
-    fontFamily: settings?.fontFamily ?? DEFAULT_FONT_KEY,
-  };
+  try {
+    const settings = await prisma.brandingSettings.findFirst({
+      orderBy: { updatedAt: "desc" },
+    });
+    return {
+      accentColor: settings?.accentColor ?? DEFAULT_ACCENT_COLOR,
+      fontFamily: settings?.fontFamily ?? DEFAULT_FONT_KEY,
+    };
+  } catch (err) {
+    console.error("[branding] falling back to defaults:", err);
+    return { accentColor: DEFAULT_ACCENT_COLOR, fontFamily: DEFAULT_FONT_KEY };
+  }
 }
 
 // Branding is Super Admin-only, not every ADMIN — it changes what everyone
