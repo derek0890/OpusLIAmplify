@@ -28,7 +28,8 @@ LinkedIn's Marketing Developer Platform for Community Management API access
 ## Architecture
 
 - **Next.js 16** (App Router, TypeScript, Tailwind CSS 4)
-- **Prisma + SQLite** for data (swap to Postgres for production — see below)
+- **Prisma + Postgres** for data (SQLite also supported for single-server
+  deployments — see Production notes below)
 - **Auth.js / NextAuth v5** with email/password and an optional enterprise
   SSO (OIDC) provider, and two roles: `ADMIN` (marketing) and `EMPLOYEE` —
   see "Deploying for a company's SSO" below
@@ -306,7 +307,7 @@ and reused after that.
 ```bash
 npm install
 cp .env.example .env   # if you don't already have a .env — see below
-npx prisma db push     # create the SQLite database from the schema
+npx prisma db push     # create the tables from the schema
 npm run db:seed        # create an admin user, a sample employee, sample posts
 npm run dev
 ```
@@ -316,7 +317,8 @@ Open http://localhost:3000.
 ### Environment variables (`.env`)
 
 ```bash
-DATABASE_URL="file:./dev.db"
+# A free Postgres works fine for local dev too — e.g. https://neon.com
+DATABASE_URL="postgresql://user:password@host/dbname?sslmode=require"
 AUTH_SECRET="generate-a-random-string-for-production"
 OPENAI_API_KEY="sk-..."          # required for AI copy generation — get one at https://platform.openai.com/api-keys
 OPENAI_RESEARCH_MODEL="gpt-5.4-nano"  # optional, see Production notes
@@ -359,11 +361,12 @@ whatever is saved there as the copywriter agent's instructions verbatim.
 
 ## Production notes
 
-- **Database:** SQLite is fine for local dev or a small single-instance
-  deployment. For anything with concurrent writers or multiple app
-  instances, switch `datasource db` in `prisma/schema.prisma` to
-  `provider = "postgresql"`, point `DATABASE_URL` at your Postgres instance,
-  and re-run `npx prisma db push` (or set up `prisma migrate` instead).
+- **Database:** Postgres by default (via `DATABASE_URL`) — this is required
+  on any serverless host (Vercel, Render, etc.), since their filesystems
+  are ephemeral and a SQLite file wouldn't persist. If you're running this
+  on a single persistent server and want SQLite instead, switch
+  `datasource db` in `prisma/schema.prisma` back to `provider = "sqlite"`
+  and point `DATABASE_URL` at a `file:./dev.db` path.
 - **Uploaded media:** currently saved to `public/uploads` on local disk
   (fine for a single persistent server; not suitable for serverless/Vercel,
   where the filesystem isn't persistent — swap `saveFile` in
